@@ -139,7 +139,7 @@ const Landing = () => {
           >
             <span className="text-foreground">A Blind Vault Auction</span>
             <br />
-            <span className="text-gradient-gold">Protocol for NFTs</span>
+            <span className="bg-gradient-to-r from-gold-300 via-primary to-gold-400 bg-clip-text text-transparent">Protocol for NFTs</span>
           </motion.h1>
 
           {/* Protocol Description */}
@@ -153,54 +153,59 @@ const Landing = () => {
             with no backend or intermediaries.
           </motion.p>
 
-          {/* Primary CTAs */}
-          <motion.div 
-            variants={itemVariants}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6"
-          >
-            {/* Create Vault - Seller Path */}
-            <Link to="/create">
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Button 
-                  size="lg" 
-                  className="h-14 px-8 text-lg font-semibold gradient-gold text-primary-foreground shadow-lg hover:shadow-primary/25 transition-shadow"
-                >
-                  <Lock className="w-5 h-5 mr-2" />
-                  Create Vault
-                </Button>
-              </motion.div>
-            </Link>
+        </motion.div>
 
-            {/* Browse Auctions - Buyer Path */}
-            <Link to="/auctions">
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+        {/* Primary CTAs */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+          className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-12"
+        >
+          {/* Create Vault - Seller Path */}
+          <Link to="/create">
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Button 
+                size="lg" 
+                className="h-14 px-8 text-lg font-semibold gradient-gold text-primary-foreground shadow-lg hover:shadow-primary/25 transition-shadow"
               >
-                <Button 
-                  size="lg" 
-                  variant="outline"
-                  className="h-14 px-8 text-lg font-semibold border-primary/50 text-primary hover:bg-primary/10 hover:border-primary transition-all"
-                >
-                  <Eye className="w-5 h-5 mr-2" />
-                  Browse Auctions
-                </Button>
-              </motion.div>
-            </Link>
-          </motion.div>
+                <Lock className="w-5 h-5 mr-2" />
+                Create Vault
+              </Button>
+            </motion.div>
+          </Link>
 
-          {/* User Path Labels */}
-          <motion.div 
-            variants={itemVariants}
-            className="flex justify-center gap-8 text-sm text-muted-foreground"
-          >
-            <span>For NFT Sellers</span>
-            <span className="text-border">|</span>
-            <span>For Bidders</span>
-          </motion.div>
+          {/* Browse Auctions - Buyer Path */}
+          <Link to="/auctions">
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Button 
+                size="lg" 
+                variant="outline"
+                className="h-14 px-8 text-lg font-semibold border-primary/50 text-primary hover:bg-primary/10 hover:border-primary transition-all"
+              >
+                <Eye className="w-5 h-5 mr-2" />
+                Browse Auctions
+              </Button>
+            </motion.div>
+          </Link>
+        </motion.div>
+
+        {/* User Path Labels */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.8 }}
+          className="flex justify-center gap-8 text-sm text-muted-foreground mt-6"
+        >
+          <span>For NFT Sellers</span>
+          <span className="text-border">|</span>
+          <span>For Bidders</span>
         </motion.div>
       </section>
 
