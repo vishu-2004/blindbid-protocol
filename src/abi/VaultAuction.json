@@ -1,3 +1,216 @@
 {
-  "abi": []
+  "abi": [
+    {
+      "inputs": [],
+      "name": "vaultCount",
+      "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getAllAuctions",
+      "outputs": [{ "internalType": "uint256[]", "name": "", "type": "uint256[]" }],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [{ "internalType": "uint256", "name": "vaultId", "type": "uint256" }],
+      "name": "getAuctionCard",
+      "outputs": [
+        { "internalType": "string", "name": "name", "type": "string" },
+        { "internalType": "string", "name": "description", "type": "string" },
+        { "internalType": "bool", "name": "isLive", "type": "bool" },
+        { "internalType": "bool", "name": "isEnded", "type": "bool" },
+        { "internalType": "uint256", "name": "timeRemaining", "type": "uint256" },
+        { "internalType": "uint256", "name": "minimumPrice", "type": "uint256" }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [{ "internalType": "uint256", "name": "vaultId", "type": "uint256" }],
+      "name": "getAuction",
+      "outputs": [
+        {
+          "components": [
+            { "internalType": "address", "name": "seller", "type": "address" },
+            { "internalType": "uint256", "name": "currentBid", "type": "uint256" },
+            { "internalType": "address", "name": "highestBidder", "type": "address" },
+            { "internalType": "uint256", "name": "startTime", "type": "uint256" },
+            { "internalType": "uint256", "name": "lastBidTime", "type": "uint256" },
+            { "internalType": "uint256", "name": "bidWindow", "type": "uint256" },
+            { "internalType": "uint256", "name": "auctionDuration", "type": "uint256" },
+            { "internalType": "uint256", "name": "endTime", "type": "uint256" },
+            { "internalType": "bool", "name": "active", "type": "bool" },
+            { "internalType": "bool", "name": "ended", "type": "bool" },
+            { "internalType": "uint256", "name": "startPrice", "type": "uint256" }
+          ],
+          "internalType": "struct VaultAuction.Auction",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [{ "internalType": "uint256", "name": "vaultId", "type": "uint256" }],
+      "name": "getAuctionTiming",
+      "outputs": [
+        { "internalType": "uint256", "name": "lastBidTime", "type": "uint256" },
+        { "internalType": "uint256", "name": "bidWindow", "type": "uint256" },
+        { "internalType": "uint256", "name": "endTime", "type": "uint256" },
+        { "internalType": "bool", "name": "active", "type": "bool" },
+        { "internalType": "bool", "name": "ended", "type": "bool" }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [{ "internalType": "uint256", "name": "vaultId", "type": "uint256" }],
+      "name": "getVaultNFTs",
+      "outputs": [
+        {
+          "components": [
+            { "internalType": "address", "name": "nftAddress", "type": "address" },
+            { "internalType": "uint256", "name": "tokenId", "type": "uint256" }
+          ],
+          "internalType": "struct VaultAuction.NFTItem[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [{ "internalType": "uint256", "name": "vaultId", "type": "uint256" }],
+      "name": "getVaultWithAuction",
+      "outputs": [
+        { "internalType": "string", "name": "name", "type": "string" },
+        { "internalType": "string", "name": "description", "type": "string" },
+        {
+          "components": [
+            { "internalType": "address", "name": "nftAddress", "type": "address" },
+            { "internalType": "uint256", "name": "tokenId", "type": "uint256" }
+          ],
+          "internalType": "struct VaultAuction.NFTItem[]",
+          "name": "nfts",
+          "type": "tuple[]"
+        },
+        { "internalType": "address", "name": "seller", "type": "address" },
+        { "internalType": "uint256", "name": "currentBid", "type": "uint256" },
+        { "internalType": "address", "name": "highestBidder", "type": "address" },
+        { "internalType": "uint256", "name": "lastBidTime", "type": "uint256" },
+        { "internalType": "bool", "name": "active", "type": "bool" },
+        { "internalType": "bool", "name": "ended", "type": "bool" },
+        { "internalType": "uint256", "name": "startPrice", "type": "uint256" }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        { "internalType": "uint256", "name": "vaultId", "type": "uint256" },
+        { "internalType": "address", "name": "user", "type": "address" }
+      ],
+      "name": "isVaultSeller",
+      "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        { "internalType": "address[]", "name": "nftAddresses", "type": "address[]" },
+        { "internalType": "uint256[]", "name": "tokenIds", "type": "uint256[]" },
+        { "internalType": "string", "name": "name", "type": "string" },
+        { "internalType": "string", "name": "description", "type": "string" }
+      ],
+      "name": "createVault",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        { "internalType": "uint256", "name": "vaultId", "type": "uint256" },
+        { "internalType": "uint256", "name": "startPrice", "type": "uint256" },
+        { "internalType": "uint256", "name": "auctionDuration", "type": "uint256" }
+      ],
+      "name": "createAuction",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [{ "internalType": "uint256", "name": "vaultId", "type": "uint256" }],
+      "name": "startAuction",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [{ "internalType": "uint256", "name": "vaultId", "type": "uint256" }],
+      "name": "bid",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [{ "internalType": "uint256", "name": "vaultId", "type": "uint256" }],
+      "name": "endAuction",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        { "indexed": true, "internalType": "uint256", "name": "vaultId", "type": "uint256" },
+        { "indexed": true, "internalType": "address", "name": "seller", "type": "address" }
+      ],
+      "name": "VaultCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        { "indexed": true, "internalType": "uint256", "name": "vaultId", "type": "uint256" },
+        { "indexed": false, "internalType": "uint256", "name": "startPrice", "type": "uint256" }
+      ],
+      "name": "AuctionCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        { "indexed": true, "internalType": "uint256", "name": "vaultId", "type": "uint256" },
+        { "indexed": false, "internalType": "uint256", "name": "startTime", "type": "uint256" },
+        { "indexed": false, "internalType": "uint256", "name": "endTime", "type": "uint256" }
+      ],
+      "name": "AuctionStarted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        { "indexed": true, "internalType": "uint256", "name": "vaultId", "type": "uint256" },
+        { "indexed": false, "internalType": "address", "name": "bidder", "type": "address" },
+        { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" }
+      ],
+      "name": "BidPlaced",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        { "indexed": true, "internalType": "uint256", "name": "vaultId", "type": "uint256" },
+        { "indexed": false, "internalType": "address", "name": "winner", "type": "address" },
+        { "indexed": false, "internalType": "uint256", "name": "finalPrice", "type": "uint256" }
+      ],
+      "name": "AuctionEnded",
+      "type": "event"
+    }
+  ]
 }
