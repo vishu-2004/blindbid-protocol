@@ -1,11 +1,11 @@
 import { ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLocation } from 'react-router-dom';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 
 interface LayoutProps {
   children: ReactNode;
+  pathname: string;
 }
 
 const pageVariants = {
@@ -30,9 +30,7 @@ const pageVariants = {
   },
 };
 
-export const Layout = ({ children }: LayoutProps) => {
-  const location = useLocation();
-
+export const Layout = ({ children, pathname }: LayoutProps) => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
@@ -41,7 +39,7 @@ export const Layout = ({ children }: LayoutProps) => {
       <main className="flex-1 pt-20">
         <AnimatePresence mode="wait">
           <motion.div
-            key={location.pathname}
+            key={pathname}
             variants={pageVariants}
             initial="initial"
             animate="animate"
