@@ -155,14 +155,14 @@ const Landing = () => {
 
         </motion.div>
 
-        {/* Primary CTAs */}
-        <motion.div
+        
+        {/* <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.6 }}
           className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-12"
         >
-          {/* Create Vault - Seller Path */}
+          
           <Link to="/create">
             <motion.div
               whileHover={{ scale: 1.02 }}
@@ -178,7 +178,7 @@ const Landing = () => {
             </motion.div>
           </Link>
 
-          {/* Browse Auctions - Buyer Path */}
+          
           <Link to="/auctions">
             <motion.div
               whileHover={{ scale: 1.02 }}
@@ -194,10 +194,10 @@ const Landing = () => {
               </Button>
             </motion.div>
           </Link>
-        </motion.div>
+        </motion.div> */}
 
         {/* User Path Labels */}
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.8 }}
@@ -206,7 +206,7 @@ const Landing = () => {
           <span>For NFT Sellers</span>
           <span className="text-border">|</span>
           <span>For Bidders</span>
-        </motion.div>
+        </motion.div> */}
       </section>
 
       {/* Floating Vault Icon */}
