@@ -50,9 +50,8 @@ export const LiveAuctionView = ({
       className="space-y-8"
     >
       {/* Header with pulse effect for live */}
-      <div className="text-center relative">
+      <div className="text-center space-y-4">
         <motion.div
-          className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
         >
@@ -62,10 +61,10 @@ export const LiveAuctionView = ({
           </span>
         </motion.div>
 
-        <h1 className="text-3xl font-bold text-foreground mt-8 mb-2">{vaultData.name}</h1>
+        <h1 className="text-3xl font-bold text-foreground">{vaultData.name}</h1>
         <p className="text-muted-foreground max-w-md mx-auto">{vaultData.description}</p>
         
-        <div className="mt-4">
+        <div>
           <AddressDisplay address={vaultData.seller} label="Verified Seller" className="justify-center" />
         </div>
       </div>
@@ -84,7 +83,7 @@ export const LiveAuctionView = ({
             {/* Estimated Value */}
             <div className="text-center mb-6 p-4 rounded-lg bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20">
               <p className="text-sm text-muted-foreground mb-1">Estimated Vault Value</p>
-              <p className="text-3xl font-bold text-gradient-gold">~{(Number(formattedCurrentBid) * 1.5).toFixed(0)} QIE</p>
+              <p className="text-3xl font-bold text-primary">~{Math.max(50, Math.round(vaultData.nfts.length * 25))} QIE</p>
               <p className="text-xs text-muted-foreground mt-1">*Placeholder estimate</p>
             </div>
 
