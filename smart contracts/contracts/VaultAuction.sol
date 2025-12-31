@@ -58,6 +58,8 @@ contract VaultAuction is ReentrancyGuard {
         address winner,
         uint256 finalPrice
     );
+    event AuctionCancelled(uint256 indexed vaultId);
+    event VaultCancelled(uint256 indexed vaultId);
 
     /* ---------- MODIFIERS ---------- */
 
@@ -120,6 +122,7 @@ contract VaultAuction is ReentrancyGuard {
         a.currentBid = startPrice;
         a.bidWindow = 30 seconds;
         a.auctionDuration = auctionDuration;
+        auctionIds.push(vaultId);
 
         emit AuctionCreated(vaultId, startPrice);
     }
@@ -139,6 +142,42 @@ contract VaultAuction is ReentrancyGuard {
         auctionIds.push(vaultId);
 
         emit AuctionStarted(vaultId, a.startTime, a.endTime);
+    }
+
+    function cancelAuction(uint256 vaultId) external onlySeller(vaultId) {
+        Auction storage a = vaults[vaultId].auction;
+
+        require(!a.active, "Auction already started");
+        require(!a.ended, "Auction already ended");
+        require(a.startPrice > 0, "Auction not created");
+
+        // reset auction state
+        delete vaults[vaultId].auction;
+
+        emit AuctionCancelled(vaultId);
+    }
+
+    
+    function cancelVault(uint256 vaultId) external onlySeller(vaultId) {
+        Auction storage a = vaults[vaultId].auction;
+        Vault storage v = vaults[vaultId];
+
+        require(!a.active, "Auction already started");
+        require(!a.ended, "Auction already ended");
+
+        // return NFTs to seller
+        for (uint256 i = 0; i < v.nfts.length; i++) {
+            IERC721(v.nfts[i].nftAddress).transferFrom(
+                address(this),
+                a.seller,
+                v.nfts[i].tokenId
+            );
+        }
+
+        // clear vault storage
+        delete vaults[vaultId];
+
+        emit VaultCancelled(vaultId);
     }
 
     function bid(uint256 vaultId) external payable nonReentrant {

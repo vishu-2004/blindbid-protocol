@@ -37,7 +37,7 @@ export const useAuctions = (pollInterval = 12000): UseAuctionsResult => {
     try {
       // Get all auction vault IDs
       const vaultIds = await readVaultAuction<bigint[]>('getAllAuctions');
-
+      console.log("all auct ids",vaultIds)
       if (vaultIds.length === 0) {
         setAuctions([]);
         setIsLoading(false);
