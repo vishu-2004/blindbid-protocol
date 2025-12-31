@@ -15,6 +15,7 @@ export interface AuctionCardData {
 
 interface UseAuctionsResult {
   auctions: AuctionCardData[];
+  pendingAuctions: AuctionCardData[];
   liveAuctions: AuctionCardData[];
   endedAuctions: AuctionCardData[];
   isLoading: boolean;
@@ -122,12 +123,14 @@ export const useAuctions = (pollInterval = 12000): UseAuctionsResult => {
     return () => clearInterval(timer);
   }, []);
 
-  // Filter live and ended auctions
+  // Filter pending, live and ended auctions
+  const pendingAuctions = auctions.filter((a) => !a.isLive && !a.isEnded);
   const liveAuctions = auctions.filter((a) => a.isLive && !a.isEnded);
   const endedAuctions = auctions.filter((a) => a.isEnded);
 
   return {
     auctions,
+    pendingAuctions,
     liveAuctions,
     endedAuctions,
     isLoading,

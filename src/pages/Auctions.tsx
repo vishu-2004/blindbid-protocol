@@ -7,7 +7,7 @@ import { useAuctions } from '@/hooks/useAuctions';
 import { isContractConfigured } from '@/utils/contract';
 
 const Auctions = () => {
-  const { auctions, liveAuctions, endedAuctions, isLoading, error, refetch } = useAuctions();
+  const { auctions, pendingAuctions, liveAuctions, endedAuctions, isLoading, error, refetch } = useAuctions();
   const contractConfigured = isContractConfigured();
 
   return (
@@ -48,8 +48,14 @@ const Auctions = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
-          className="flex gap-6 text-sm"
+          className="flex gap-6 text-sm flex-wrap"
         >
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-yellow-500" />
+            <span className="text-muted-foreground">
+              <span className="font-medium text-foreground">{pendingAuctions.length}</span> Pending
+            </span>
+          </div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-green-500" />
             <span className="text-muted-foreground">
@@ -152,6 +158,25 @@ const Auctions = () => {
         {/* Auction Grid */}
         {!isLoading && !error && auctions.length > 0 && (
           <div className="space-y-12">
+            {/* Pending Auctions */}
+            {pendingAuctions.length > 0 && (
+              <div>
+                <motion.h2
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2"
+                >
+                  <span className="w-2 h-2 rounded-full bg-yellow-500" />
+                  Pending Auctions
+                </motion.h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {pendingAuctions.map((auction, index) => (
+                    <AuctionCard key={auction.vaultId} auction={auction} index={index} />
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Live Auctions */}
             {liveAuctions.length > 0 && (
               <div>
