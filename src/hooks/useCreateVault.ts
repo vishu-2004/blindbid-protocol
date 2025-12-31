@@ -1,9 +1,11 @@
 import { useState, useCallback } from 'react';
-import { useWriteContract, usePublicClient, useAccount, useChainId } from 'wagmi';
+import { useWriteContract, usePublicClient } from 'wagmi';
 import { type Address, type Abi, parseEther } from 'viem';
 import { getContractAddress } from '@/utils/contract';
 import { getActiveNetwork } from '@/config/chains';
 import VaultAuctionABI from '@/abi/VaultAuction.json';
+
+const activeChain = getActiveNetwork();
 
 export type Step = 1 | 2 | 3;
 
@@ -40,7 +42,7 @@ export const useCreateVault = (): UseCreateVaultResult => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const publicClient = usePublicClient();
+  const publicClient = usePublicClient({ chainId: activeChain.id });
   const { writeContractAsync } = useWriteContract();
 
   const contractAddress = getContractAddress();
@@ -110,6 +112,7 @@ export const useCreateVault = (): UseCreateVaultResult => {
           abi: ERC721_ABI as Abi,
           functionName: 'setApprovalForAll',
           args: [contractAddress, true],
+          chainId: activeChain.id,
         } as any);
 
         // Wait for transaction confirmation
@@ -165,6 +168,7 @@ export const useCreateVault = (): UseCreateVaultResult => {
           abi: VaultAuctionABI.abi as Abi,
           functionName: 'createVault',
           args: [nftAddresses, nftInfo.tokenIds, name, description],
+          chainId: activeChain.id,
         } as any);
 
         // Wait for transaction confirmation
@@ -216,6 +220,7 @@ export const useCreateVault = (): UseCreateVaultResult => {
           abi: VaultAuctionABI.abi as Abi,
           functionName: 'createAuction',
           args: [vaultId, startPriceWei, durationSeconds],
+          chainId: activeChain.id,
         } as any);
 
         // Wait for transaction confirmation
