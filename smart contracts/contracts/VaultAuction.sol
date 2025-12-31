@@ -157,7 +157,6 @@ contract VaultAuction is ReentrancyGuard {
         emit AuctionCancelled(vaultId);
     }
 
-    
     function cancelVault(uint256 vaultId) external onlySeller(vaultId) {
         Auction storage a = vaults[vaultId].auction;
         Vault storage v = vaults[vaultId];
@@ -246,6 +245,94 @@ contract VaultAuction is ReentrancyGuard {
         uint256 vaultId
     ) external view returns (Auction memory) {
         return vaults[vaultId].auction;
+    }
+
+    /**
+     * @notice Returns full vault details along with auction state
+     */
+    function getVaultWithAuction(
+        uint256 vaultId
+    )
+        external
+        view
+        returns (
+            string memory name,
+            string memory description,
+            NFTItem[] memory nfts,
+            address seller,
+            uint256 currentBid,
+            address highestBidder,
+            uint256 lastBidTime,
+            bool active,
+            bool ended,
+            uint256 startPrice
+        )
+    {
+        Vault storage v = vaults[vaultId];
+        Auction storage a = v.auction;
+
+        return (
+            v.name,
+            v.description,
+            v.nfts,
+            a.seller,
+            a.currentBid,
+            a.highestBidder,
+            a.lastBidTime,
+            a.active,
+            a.ended,
+            a.startPrice
+        );
+    }
+
+    /**
+     * @notice Returns minimal data needed to render auction cards
+     */
+    function getAuctionCard(
+        uint256 vaultId
+    )
+        external
+        view
+        returns (
+            string memory name,
+            string memory description,
+            bool isLive,
+            bool isEnded,
+            uint256 timeRemaining,
+            uint256 minimumPrice
+        )
+    {
+        Vault storage v = vaults[vaultId];
+        Auction storage a = v.auction;
+
+        uint256 remaining;
+
+        if (a.ended) {
+            remaining = 0;
+        } else if (block.timestamp >= a.endTime) {
+            remaining = 0;
+        } else {
+            remaining = a.endTime - block.timestamp;
+        }
+
+        return (
+            v.name,
+            v.description,
+            a.active,
+            a.ended,
+            remaining,
+            a.startPrice
+        );
+    }
+
+    /**
+     * @notice Checks if a user is the seller of a vault
+     */
+    function isVaultSeller(
+        uint256 vaultId,
+        address user
+    ) external view returns (bool) {
+        return vaults[vaultId].auction.seller == user;
     }
 
     /**
