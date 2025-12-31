@@ -139,4 +139,15 @@
   .glow-gold-subtle {
     box-shadow: 0 0 30px hsl(43 74% 49% / 0.1);
   }
+
+  /* Shimmer animation for rarity cards */
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s infinite;
+  }
 }

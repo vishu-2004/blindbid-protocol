@@ -1,82 +1,117 @@
 import { useParams, Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
+import { useAuctionDetail } from '@/hooks/useAuctionDetail';
+import { SellerPreStartView } from '@/components/auction/SellerPreStartView';
+import { BuyerPreStartView } from '@/components/auction/BuyerPreStartView';
+import { LiveAuctionView } from '@/components/auction/LiveAuctionView';
+import { AuctionEndedView } from '@/components/auction/AuctionEndedView';
+import { AuctionCancelledView } from '@/components/auction/AuctionCancelledView';
+import { AuctionLoadingView } from '@/components/auction/AuctionLoadingView';
+import { AuctionNotFoundView } from '@/components/auction/AuctionNotFoundView';
 
 const AuctionDetail = () => {
   const { id } = useParams<{ id: string }>();
+  
+  const {
+    vaultData,
+    currentView,
+    remainingTime,
+    formattedCurrentBid,
+    formattedStartPrice,
+    nextBidAmount,
+    isConnected,
+    canBid,
+    actionPending,
+    isSeller,
+    isWinner,
+    activeChain,
+    error,
+    startAuction,
+    cancelAuction,
+    cancelVault,
+    placeBid,
+    endAuction,
+  } = useAuctionDetail(id);
+
+  const renderView = () => {
+    switch (currentView) {
+      case 'loading':
+        return <AuctionLoadingView />;
+
+      case 'not-found':
+        return <AuctionNotFoundView error={error} />;
+
+      case 'seller-prestart':
+        return vaultData ? (
+          <SellerPreStartView
+            vaultData={vaultData}
+            vaultId={id!}
+            formattedStartPrice={formattedStartPrice}
+            actionPending={actionPending}
+            onStartAuction={startAuction}
+            onCancelAuction={cancelAuction}
+            onCancelVault={cancelVault}
+          />
+        ) : null;
+
+      case 'buyer-prestart':
+        return vaultData ? (
+          <BuyerPreStartView
+            vaultData={vaultData}
+            formattedStartPrice={formattedStartPrice}
+          />
+        ) : null;
+
+      case 'live':
+        return vaultData ? (
+          <LiveAuctionView
+            vaultData={vaultData}
+            remainingTime={remainingTime}
+            formattedCurrentBid={formattedCurrentBid}
+            nextBidAmount={nextBidAmount}
+            isConnected={isConnected}
+            canBid={canBid}
+            actionPending={actionPending}
+            isSeller={isSeller}
+            activeChain={activeChain}
+            onPlaceBid={placeBid}
+            onEndAuction={endAuction}
+          />
+        ) : null;
+
+      case 'ended':
+        return vaultData ? (
+          <AuctionEndedView
+            vaultData={vaultData}
+            formattedCurrentBid={formattedCurrentBid}
+            isWinner={isWinner}
+          />
+        ) : null;
+
+      case 'cancelled':
+        return vaultData ? (
+          <AuctionCancelledView vaultData={vaultData} />
+        ) : null;
+
+      default:
+        return <AuctionNotFoundView />;
+    }
+  };
 
   return (
-    <div className="container mx-auto px-4 py-16">
+    <div className="container mx-auto px-4 py-8">
       {/* Breadcrumb */}
       <div className="mb-8">
-        <Link to="/auctions" className="text-muted-foreground hover:text-primary text-sm">
-          ← Back to Auctions
+        <Link 
+          to="/auctions" 
+          className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary text-sm transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Auctions
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        {/* Vault Preview */}
-        <div className="glass-gold rounded-xl p-6">
-          <div className="aspect-square rounded-lg bg-dark-700 flex items-center justify-center mb-4">
-            <div className="text-center">
-              <div className="text-6xl mb-4">🔒</div>
-              <span className="text-muted-foreground">Vault Contents Hidden</span>
-            </div>
-          </div>
-          <p className="text-sm text-muted-foreground text-center">
-            Contents will be revealed after auction ends
-          </p>
-        </div>
-
-        {/* Auction Info */}
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">
-              Vault Auction #{id}
-            </h1>
-            <p className="text-muted-foreground">
-              Placeholder auction description
-            </p>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="glass rounded-lg p-4">
-              <p className="text-sm text-muted-foreground mb-1">Current Bid</p>
-              <p className="text-2xl font-bold text-primary">-- QIE</p>
-            </div>
-            <div className="glass rounded-lg p-4">
-              <p className="text-sm text-muted-foreground mb-1">Time Left</p>
-              <p className="text-2xl font-bold text-foreground">--:--:--</p>
-            </div>
-          </div>
-
-          <div className="glass rounded-lg p-4">
-            <p className="text-sm text-muted-foreground mb-1">Total Bids</p>
-            <p className="text-xl font-semibold text-foreground">--</p>
-          </div>
-
-          {/* Bid Form Placeholder */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                Your Bid Amount
-              </label>
-              <div className="h-12 rounded-md bg-input border border-border" />
-            </div>
-
-            <Button 
-              className="w-full h-12 gradient-gold text-primary-foreground font-semibold text-lg"
-              disabled
-            >
-              Place Bid (Coming Soon)
-            </Button>
-          </div>
-
-          <p className="text-center text-muted-foreground text-sm">
-            Bidding functionality will be implemented in future prompts.
-          </p>
-        </div>
-      </div>
+      {renderView()}
     </div>
   );
 };
