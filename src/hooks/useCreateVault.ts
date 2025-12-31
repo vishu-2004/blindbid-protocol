@@ -4,7 +4,6 @@ import { type Address, type Abi, parseEther } from 'viem';
 import { getContractAddress } from '@/utils/contract';
 import { getActiveNetwork } from '@/config/chains';
 import VaultAuctionABI from '@/abi/VaultAuction.json';
-import ERC721ABI from '@/abi/ERC721.json';
 
 export type Step = 1 | 2 | 3;
 
@@ -93,9 +92,22 @@ export const useCreateVault = (): UseCreateVaultResult => {
         setNftInfo({ nftAddress: address, tokenIds });
 
         // Approve contract for all tokens using setApprovalForAll
+        const ERC721_ABI = [
+  {
+    "inputs": [
+      { "name": "operator", "type": "address" },
+      { "name": "approved", "type": "bool" }
+    ],
+    "name": "setApprovalForAll",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+];
+
         const hash = await writeContractAsync({
           address,
-          abi: ERC721ABI.abi as Abi,
+          abi: ERC721_ABI as Abi,
           functionName: 'setApprovalForAll',
           args: [contractAddress, true],
         } as any);

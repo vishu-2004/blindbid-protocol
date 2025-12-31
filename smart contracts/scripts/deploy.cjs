@@ -14,10 +14,16 @@ async function main() {
   const VaultAuction = await hre.ethers.getContractFactory("VaultAuction");
   const auction = await VaultAuction.deploy();
 
+  const MintNft = await hre.ethers.getContractFactory("MonkeyNFT");
+  const nft = await MintNft.deploy();
+
   await auction.waitForDeployment();
+  await nft.waitForDeployment();
 
   console.log("✅ VaultAuction deployed to:");
   console.log(await auction.getAddress());
+  console.log("✅ MintNFT deployed to:");
+  console.log(await nft.getAddress());
 }
 
 main().catch((error) => {
