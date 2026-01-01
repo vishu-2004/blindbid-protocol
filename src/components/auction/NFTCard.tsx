@@ -33,7 +33,7 @@ const tokenURIAbi = [
 const resolveIPFS = (url: string) => {
   if (!url) return '';
   if (url.startsWith('ipfs://')) {
-    return url.replace('ipfs://', 'https://ipfs.io/ipfs/');
+    return url.replace('ipfs://', 'https://ivory-occasional-quail-719.mypinata.cloud/ipfs/');
   }
   return url;
 };
