@@ -157,14 +157,20 @@ export const NFTCard = ({ nftAddress, tokenId, showFullAddress = true }: NFTCard
             </div>
 
             {/* NFT Info - Simplified */}
-            <div className="p-4 space-y-2 bg-gradient-to-b from-transparent to-primary/5">
-              <h3 className="text-lg font-bold text-gradient-gold">
-                {metadata?.name || `Token #${Number(tokenId)}`}
-              </h3>
+            <div className="p-4 space-y-3 bg-gradient-to-b from-transparent to-primary/5">
+              <div>
+                <p className="text-xs font-medium text-primary/70 uppercase tracking-wider mb-1">Name</p>
+                <h3 className="text-lg font-bold text-foreground">
+                  {metadata?.name || `Token #${Number(tokenId)}`}
+                </h3>
+              </div>
               {metadata?.description && (
-                <p className="text-sm text-muted-foreground line-clamp-3">
-                  {metadata.description}
-                </p>
+                <div>
+                  <p className="text-xs font-medium text-primary/70 uppercase tracking-wider mb-1">Description</p>
+                  <p className="text-sm text-muted-foreground line-clamp-3">
+                    {metadata.description}
+                  </p>
+                </div>
               )}
             </div>
           </div>
