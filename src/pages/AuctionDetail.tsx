@@ -23,6 +23,7 @@ const AuctionDetail = () => {
     canBid,
     actionPending,
     isSeller,
+    isHighestBidder,
     isWinner,
     activeChain,
     error,
@@ -73,6 +74,7 @@ const AuctionDetail = () => {
             canBid={canBid}
             actionPending={actionPending}
             isSeller={isSeller}
+            isHighestBidder={isHighestBidder}
             activeChain={activeChain}
             onPlaceBid={placeBid}
             onEndAuction={endAuction}
