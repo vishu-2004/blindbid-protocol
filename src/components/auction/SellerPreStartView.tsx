@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Copy, Check, Play, X, Trash2, Clock, Coins, ExternalLink } from 'lucide-react';
+import { Copy, Check, Play, X, Trash2, Clock, Coins } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -15,6 +15,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { AddressDisplay } from './AddressDisplay';
+import { NFTCard } from './NFTCard';
 import { type VaultData } from '@/hooks/useAuctionDetail';
 import { formatEther } from 'viem';
 
@@ -94,20 +95,12 @@ export const SellerPreStartView = ({
           <h3 className="text-sm font-medium text-muted-foreground">Vault Contents</h3>
           <div className="grid gap-2 max-h-48 overflow-y-auto">
             {vaultData.nfts.map((nft, index) => (
-              <div key={index} className="glass rounded-lg p-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                    <span className="text-sm font-bold text-primary">#{Number(nft.tokenId)}</span>
-                  </div>
-                  <div>
-                    <p className="font-mono text-xs text-muted-foreground">
-                      {nft.nftAddress.slice(0, 10)}...{nft.nftAddress.slice(-6)}
-                    </p>
-                    <p className="text-sm font-medium text-foreground">Token #{Number(nft.tokenId)}</p>
-                  </div>
-                </div>
-                <ExternalLink className="w-4 h-4 text-muted-foreground" />
-              </div>
+              <NFTCard
+                key={index}
+                nftAddress={nft.nftAddress}
+                tokenId={nft.tokenId}
+                showFullAddress
+              />
             ))}
           </div>
         </div>

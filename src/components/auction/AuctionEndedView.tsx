@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
-import { Trophy, ExternalLink, Coins, CheckCircle, PartyPopper } from 'lucide-react';
+import { Trophy, CheckCircle, PartyPopper } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { AddressDisplay } from './AddressDisplay';
+import { NFTCard } from './NFTCard';
 import { type VaultData } from '@/hooks/useAuctionDetail';
 
 interface AuctionEndedViewProps {
@@ -101,34 +102,20 @@ export const AuctionEndedView = ({
           </div>
         </div>
 
-        {/* Revealed NFTs (visible to winner or if auction ended without bids) */}
-        {(isWinner || !hasWinner) && vaultData.nfts.length > 0 && (
+        {/* Revealed NFTs - visible to ALL users when auction ends */}
+        {vaultData.nfts.length > 0 && (
           <div className="space-y-3">
             <h3 className="text-sm font-medium text-muted-foreground">
-              {isWinner ? 'Your NFTs' : 'Vault Contents (Returned to Seller)'}
+              {isWinner ? 'Your NFTs' : hasWinner ? 'Transferred NFTs' : 'Vault Contents (Returned to Seller)'}
             </h3>
             <div className="grid gap-2 max-h-64 overflow-y-auto">
               {vaultData.nfts.map((nft, index) => (
-                <motion.div
+                <NFTCard
                   key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="glass rounded-lg p-3 flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center">
-                      <span className="text-sm font-bold text-primary">#{Number(nft.tokenId)}</span>
-                    </div>
-                    <div>
-                      <p className="font-mono text-xs text-muted-foreground">
-                        {nft.nftAddress.slice(0, 10)}...{nft.nftAddress.slice(-6)}
-                      </p>
-                      <p className="text-sm font-medium text-foreground">Token #{Number(nft.tokenId)}</p>
-                    </div>
-                  </div>
-                  <ExternalLink className="w-4 h-4 text-muted-foreground" />
-                </motion.div>
+                  nftAddress={nft.nftAddress}
+                  tokenId={nft.tokenId}
+                  showFullAddress
+                />
               ))}
             </div>
           </div>
