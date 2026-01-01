@@ -401,11 +401,17 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
   const formattedStartPrice = vaultData ? formatPrice(vaultData.startPrice) : '0';
   const nextBidAmount = vaultData ? formatPrice(vaultData.currentBid + BigInt(1)) : '0';
 
-  // Is winner check
+  // Is highest bidder check (works during live auction)
+  const isHighestBidder = useMemo(() => {
+    if (!vaultData || !address) return false;
+    return vaultData.highestBidder.toLowerCase() === address.toLowerCase();
+  }, [vaultData, address]);
+
+  // Is winner check (only after auction ended)
   const isWinner = useMemo(() => {
     if (!vaultData || !address) return false;
-    return vaultData.ended && vaultData.highestBidder.toLowerCase() === address.toLowerCase();
-  }, [vaultData, address]);
+    return vaultData.ended && isHighestBidder;
+  }, [vaultData, address, isHighestBidder]);
 
   // Bid safety check (disable bidding in last 5 seconds)
   const canBid = useMemo(() => {
@@ -427,6 +433,7 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
     formattedCurrentBid,
     formattedStartPrice,
     nextBidAmount,
+    isHighestBidder,
     isWinner,
     canBid,
     address,
