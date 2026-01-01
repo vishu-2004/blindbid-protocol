@@ -160,7 +160,7 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
     }
   }, [blockNumber, fetchBlockTimestamp, fetchVaultData]);
 
-  // Calculate remaining time
+  // Calculate remaining time - lock to 0 once expired
   useEffect(() => {
     if (!timing || !blockTimestamp || timing.endTime === BigInt(0)) {
       setRemainingTime(0);
@@ -176,14 +176,30 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
       const effectiveEnd = bidWindowEnd < auctionEnd ? bidWindowEnd : auctionEnd;
       const remaining = effectiveEnd > now ? Number(effectiveEnd - now) : 0;
       
-      setRemainingTime(remaining);
+      return remaining;
     };
 
-    calculateRemaining();
+    const remaining = calculateRemaining();
+    
+    // If already expired, lock at 0 and don't start interval
+    if (remaining <= 0) {
+      setRemainingTime(0);
+      return;
+    }
+    
+    setRemainingTime(remaining);
 
     // Update every second for smoother countdown
     const interval = setInterval(() => {
-      setRemainingTime(prev => Math.max(0, prev - 1));
+      setRemainingTime(prev => {
+        const newValue = prev - 1;
+        // Lock to 0 once expired
+        if (newValue <= 0) {
+          clearInterval(interval);
+          return 0;
+        }
+        return newValue;
+      });
     }, 1000);
 
     return () => clearInterval(interval);
