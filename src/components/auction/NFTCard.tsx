@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ExternalLink, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { type Address } from 'viem';
+import { usePublicClient } from 'wagmi';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 interface NFTMetadata {
   name?: string;
   description?: string;
   image?: string;
-  attributes?: { trait_type: string; value: string | number }[];
 }
 
 interface NFTCardProps {
@@ -17,6 +17,17 @@ interface NFTCardProps {
   tokenId: bigint;
   showFullAddress?: boolean;
 }
+
+// ERC721 tokenURI ABI
+const tokenURIAbi = [
+  {
+    inputs: [{ name: 'tokenId', type: 'uint256' }],
+    name: 'tokenURI',
+    outputs: [{ name: '', type: 'string' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+] as const;
 
 // Helper to convert IPFS URL to gateway URL
 const resolveIPFS = (url: string) => {
@@ -31,7 +42,7 @@ export const NFTCard = ({ nftAddress, tokenId, showFullAddress = true }: NFTCard
   const [isOpen, setIsOpen] = useState(false);
   const [metadata, setMetadata] = useState<NFTMetadata | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+  const publicClient = usePublicClient();
 
   // Fetch NFT metadata when modal opens
   useEffect(() => {
@@ -41,31 +52,40 @@ export const NFTCard = ({ nftAddress, tokenId, showFullAddress = true }: NFTCard
   }, [isOpen]);
 
   const fetchMetadata = async () => {
+    if (!publicClient) return;
+    
     setLoading(true);
-    setError(false);
     try {
-      // Try to fetch tokenURI from the NFT contract
-      const response = await fetch(
-        `https://api.qie.network/nft/${nftAddress}/${tokenId.toString()}`
-      );
+      // Call tokenURI on the NFT contract
+      const tokenURI = await publicClient.readContract({
+        address: nftAddress,
+        abi: tokenURIAbi,
+        functionName: 'tokenURI',
+        args: [tokenId],
+      });
+
+      // Resolve IPFS URL and fetch metadata
+      const resolvedURI = resolveIPFS(tokenURI);
+      const response = await fetch(resolvedURI);
       
       if (response.ok) {
         const data = await response.json();
-        setMetadata(data);
+        setMetadata({
+          name: data.name,
+          description: data.description,
+          image: data.image,
+        });
       } else {
-        // Fallback: generate placeholder metadata
         setMetadata({
           name: `Token #${Number(tokenId)}`,
-          description: 'NFT metadata unavailable',
+          description: 'Metadata unavailable',
         });
       }
     } catch (err) {
-      // Generate placeholder on error
       setMetadata({
         name: `Token #${Number(tokenId)}`,
         description: 'Unable to fetch metadata',
       });
-      setError(true);
     } finally {
       setLoading(false);
     }
@@ -83,10 +103,10 @@ export const NFTCard = ({ nftAddress, tokenId, showFullAddress = true }: NFTCard
         animate={{ opacity: 1, x: 0 }}
         whileHover={{ scale: 1.02 }}
         onClick={() => setIsOpen(true)}
-        className="glass rounded-lg p-3 flex items-center justify-between cursor-pointer hover:bg-muted/30 transition-colors"
+        className="glass-gold rounded-xl p-3 flex items-center justify-between cursor-pointer hover:bg-primary/10 transition-all duration-300 border border-primary/30"
       >
         <div className="flex items-center gap-3 min-w-0 flex-1">
-          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center shrink-0 border border-primary/20">
             <span className="text-sm font-bold text-primary">#{Number(tokenId)}</span>
           </div>
           <div className="min-w-0 flex-1">
@@ -96,12 +116,12 @@ export const NFTCard = ({ nftAddress, tokenId, showFullAddress = true }: NFTCard
             <p className="text-sm font-medium text-foreground">Token #{Number(tokenId)}</p>
           </div>
         </div>
-        <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0 ml-2" />
+        <ExternalLink className="w-4 h-4 text-primary shrink-0 ml-2" />
       </motion.div>
 
       {/* NFT Detail Modal */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-md p-0 overflow-hidden glass border-primary/20">
+        <DialogContent className="sm:max-w-sm p-0 overflow-hidden rounded-2xl border-2 border-primary/50 bg-card/95 backdrop-blur-xl shadow-[0_0_30px_rgba(212,175,55,0.15)]">
           <VisuallyHidden>
             <DialogTitle>NFT Details</DialogTitle>
           </VisuallyHidden>
@@ -110,15 +130,15 @@ export const NFTCard = ({ nftAddress, tokenId, showFullAddress = true }: NFTCard
             {/* Close Button */}
             <button
               onClick={() => setIsOpen(false)}
-              className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
+              className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors border border-primary/30"
             >
               <X className="w-4 h-4 text-foreground" />
             </button>
 
             {/* NFT Image */}
-            <div className="aspect-square w-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative overflow-hidden">
+            <div className="aspect-square w-full bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center relative overflow-hidden rounded-t-2xl">
               {loading ? (
-                <Loader2 className="w-12 h-12 text-primary animate-spin" />
+                <Loader2 className="w-10 h-10 text-primary animate-spin" />
               ) : metadata?.image ? (
                 <img
                   src={resolveIPFS(metadata.image)}
@@ -130,67 +150,21 @@ export const NFTCard = ({ nftAddress, tokenId, showFullAddress = true }: NFTCard
                 />
               ) : (
                 <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                  <ImageIcon className="w-16 h-16" />
+                  <ImageIcon className="w-12 h-12 text-primary/50" />
                   <span className="text-sm">No image available</span>
                 </div>
               )}
-              
-              {/* Token ID Badge */}
-              <div className="absolute bottom-3 left-3 px-3 py-1.5 rounded-full bg-background/80 backdrop-blur-sm">
-                <span className="text-sm font-bold text-primary">#{Number(tokenId)}</span>
-              </div>
             </div>
 
-            {/* NFT Info */}
-            <div className="p-5 space-y-4">
-              {/* Name & Description */}
-              <div>
-                <h3 className="text-xl font-bold text-foreground">
-                  {metadata?.name || `Token #${Number(tokenId)}`}
-                </h3>
-                {metadata?.description && (
-                  <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                    {metadata.description}
-                  </p>
-                )}
-              </div>
-
-              {/* Contract Address */}
-              <div className="glass rounded-lg p-3 space-y-1">
-                <p className="text-xs text-muted-foreground">Contract Address</p>
-                <p className="font-mono text-xs text-foreground break-all">
-                  {nftAddress}
+            {/* NFT Info - Simplified */}
+            <div className="p-4 space-y-2 bg-gradient-to-b from-transparent to-primary/5">
+              <h3 className="text-lg font-bold text-gradient-gold">
+                {metadata?.name || `Token #${Number(tokenId)}`}
+              </h3>
+              {metadata?.description && (
+                <p className="text-sm text-muted-foreground line-clamp-3">
+                  {metadata.description}
                 </p>
-              </div>
-
-              {/* Token ID */}
-              <div className="glass rounded-lg p-3 space-y-1">
-                <p className="text-xs text-muted-foreground">Token ID</p>
-                <p className="font-mono text-sm text-foreground">
-                  {tokenId.toString()}
-                </p>
-              </div>
-
-              {/* Attributes */}
-              {metadata?.attributes && metadata.attributes.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground font-medium">Attributes</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {metadata.attributes.map((attr, index) => (
-                      <div
-                        key={index}
-                        className="glass rounded-lg p-2 text-center"
-                      >
-                        <p className="text-xs text-muted-foreground uppercase">
-                          {attr.trait_type}
-                        </p>
-                        <p className="text-sm font-medium text-foreground truncate">
-                          {attr.value}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
               )}
             </div>
           </div>
