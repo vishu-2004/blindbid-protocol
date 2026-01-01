@@ -26,6 +26,8 @@ const formatTimeRemaining = (seconds: number): string => {
 
 export const AuctionCard = ({ auction, index }: AuctionCardProps) => {
   const isLive = auction.isLive && !auction.isEnded;
+  const isPending = !auction.isLive && !auction.isEnded;
+  const isEnded = auction.isEnded;
 
   return (
     <Link to={`/auction/${auction.vaultId}`}>
@@ -77,6 +79,8 @@ export const AuctionCard = ({ auction, index }: AuctionCardProps) => {
                 flex items-center gap-1.5
                 ${isLive 
                   ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                  : isPending
+                  ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
                   : 'bg-muted/50 text-muted-foreground border border-border/50'
                 }
               `}
@@ -85,6 +89,11 @@ export const AuctionCard = ({ auction, index }: AuctionCardProps) => {
                 <>
                   <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
                   Live
+                </>
+              ) : isPending ? (
+                <>
+                  <Clock className="w-3 h-3" />
+                  Pending
                 </>
               ) : (
                 <>
@@ -119,10 +128,12 @@ export const AuctionCard = ({ auction, index }: AuctionCardProps) => {
                     ? 'text-destructive animate-pulse'
                     : isLive
                     ? 'text-green-400'
+                    : isPending
+                    ? 'text-yellow-400'
                     : 'text-muted-foreground'
                 }`}
               >
-                {isLive ? formatTimeRemaining(auction.timeRemaining) : 'Auction Ended'}
+                {isLive ? formatTimeRemaining(auction.timeRemaining) : isPending ? 'Waiting to Start' : 'Auction Ended'}
               </span>
             </div>
 
