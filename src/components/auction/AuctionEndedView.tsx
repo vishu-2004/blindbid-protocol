@@ -81,15 +81,15 @@ export const AuctionEndedView = ({
 
         {/* Details */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between py-3 border-b border-border/20">
-            <span className="text-muted-foreground">Seller</span>
-            <AddressDisplay address={vaultData.seller} />
+          <div className="flex flex-col gap-2 py-3 border-b border-border/20">
+            <span className="text-muted-foreground text-sm">Seller</span>
+            <AddressDisplay address={vaultData.seller} showFullAddress />
           </div>
 
-          <div className="flex items-center justify-between py-3 border-b border-border/20">
-            <span className="text-muted-foreground">Winner</span>
+          <div className="flex flex-col gap-2 py-3 border-b border-border/20">
+            <span className="text-muted-foreground text-sm">Winner</span>
             {hasWinner ? (
-              <AddressDisplay address={vaultData.highestBidder} />
+              <AddressDisplay address={vaultData.highestBidder} showFullAddress />
             ) : (
               <span className="text-muted-foreground">No bids received</span>
             )}
