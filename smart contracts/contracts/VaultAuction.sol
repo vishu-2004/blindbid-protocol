@@ -120,7 +120,7 @@ contract VaultAuction is ReentrancyGuard {
 
         a.startPrice = startPrice;
         a.currentBid = startPrice;
-        a.bidWindow = 30 seconds;
+        a.bidWindow = 60 seconds;
         a.auctionDuration = auctionDuration;
         auctionIds.push(vaultId);
 
