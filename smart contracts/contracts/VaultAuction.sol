@@ -139,7 +139,7 @@ contract VaultAuction is ReentrancyGuard {
         a.active = true;
         a.ended = false;
 
-        auctionIds.push(vaultId);
+        
 
         emit AuctionStarted(vaultId, a.startTime, a.endTime);
     }
