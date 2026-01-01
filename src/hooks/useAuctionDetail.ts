@@ -388,10 +388,18 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
     }
   }, [contractAddress, vaultId, writeContractAsync, activeChain.id, fetchVaultData]);
 
+  // Helper to format with max 3 decimal places
+  const formatPrice = (value: bigint): string => {
+    const formatted = formatEther(value);
+    const num = parseFloat(formatted);
+    // Use toFixed(3) but remove trailing zeros
+    return num.toFixed(3).replace(/\.?0+$/, '') || '0';
+  };
+
   // Formatted values
-  const formattedCurrentBid = vaultData ? formatEther(vaultData.currentBid) : '0';
-  const formattedStartPrice = vaultData ? formatEther(vaultData.startPrice) : '0';
-  const nextBidAmount = vaultData ? formatEther(vaultData.currentBid + BigInt(1)) : '0';
+  const formattedCurrentBid = vaultData ? formatPrice(vaultData.currentBid) : '0';
+  const formattedStartPrice = vaultData ? formatPrice(vaultData.startPrice) : '0';
+  const nextBidAmount = vaultData ? formatPrice(vaultData.currentBid + BigInt(1)) : '0';
 
   // Is winner check
   const isWinner = useMemo(() => {

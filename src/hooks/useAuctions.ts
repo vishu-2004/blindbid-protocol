@@ -62,7 +62,7 @@ export const useAuctions = (pollInterval = 12000): UseAuctionsResult => {
             isLive,
             isEnded,
             timeRemaining: Number(timeRemaining),
-            minimumPrice: formatEther(minimumPrice),
+            minimumPrice: parseFloat(formatEther(minimumPrice)).toFixed(3).replace(/\.?0+$/, '') || '0',
             minimumPriceRaw: minimumPrice,
           };
         } catch (err) {
