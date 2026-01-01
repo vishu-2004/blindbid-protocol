@@ -105,7 +105,8 @@ export const useAuctions = (pollInterval = 12000): UseAuctionsResult => {
     const timer = setInterval(() => {
       setAuctions((prev) =>
         prev.map((auction) => {
-          if (auction.isLive && auction.timeRemaining > 0) {
+          // Only decrement for live auctions
+          if (auction.isLive && !auction.isEnded && auction.timeRemaining > 0) {
             const newTimeRemaining = auction.timeRemaining - 1;
             return {
               ...auction,

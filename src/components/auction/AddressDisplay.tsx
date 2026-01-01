@@ -4,6 +4,7 @@ import { type Address } from 'viem';
 interface AddressDisplayProps {
   address: Address;
   showAvatar?: boolean;
+  showFullAddress?: boolean;
   label?: string;
   className?: string;
 }
@@ -26,13 +27,15 @@ const generateBlockieColors = (address: string) => {
 export const AddressDisplay = ({ 
   address, 
   showAvatar = true, 
+  showFullAddress = false,
   label,
   className = '' 
 }: AddressDisplayProps) => {
-  const shortAddress = useMemo(() => {
+  const displayAddress = useMemo(() => {
     if (!address) return '';
+    if (showFullAddress) return address;
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  }, [address]);
+  }, [address, showFullAddress]);
 
   const colors = useMemo(() => generateBlockieColors(address), [address]);
 
@@ -66,9 +69,9 @@ export const AddressDisplay = ({
           </svg>
         </div>
       )}
-      <div className="flex flex-col">
+      <div className="flex flex-col min-w-0">
         {label && <span className="text-xs text-muted-foreground">{label}</span>}
-        <span className="font-mono text-sm text-foreground">{shortAddress}</span>
+        <span className={`font-mono text-sm text-foreground ${showFullAddress ? 'break-all' : ''}`}>{displayAddress}</span>
       </div>
     </div>
   );
