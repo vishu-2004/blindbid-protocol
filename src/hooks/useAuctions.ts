@@ -23,6 +23,11 @@ interface UseAuctionsResult {
   refetch: () => Promise<void>;
 }
 
+const formatQie = (value: bigint): string => {
+  const num = parseFloat(formatEther(value));
+  return num.toFixed(3).replace(/\.?0+$/, '') || '0';
+};
+
 export const useAuctions = (pollInterval = 12000): UseAuctionsResult => {
   const [auctions, setAuctions] = useState<AuctionCardData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,15 +43,20 @@ export const useAuctions = (pollInterval = 12000): UseAuctionsResult => {
     try {
       // Get all auction vault IDs
       const vaultIds = await readVaultAuction<bigint[]>('getAllAuctions');
-      console.log("all auct ids",vaultIds)
-      if (vaultIds.length === 0) {
+
+      // Defensive: contract might return duplicates; dedupe by bigint string
+      const uniqueVaultIds = Array.from(new Set(vaultIds.map((v) => v.toString()))).map(
+        (v) => BigInt(v)
+      );
+
+      if (uniqueVaultIds.length === 0) {
         setAuctions([]);
         setIsLoading(false);
         return;
       }
 
       // Fetch card data for each vault
-      const auctionPromises = vaultIds.map(async (vaultId) => {
+      const auctionPromises = uniqueVaultIds.map(async (vaultId) => {
         try {
           const cardData = await readVaultAuction<[string, string, boolean, boolean, bigint, bigint]>(
             'getAuctionCard',
@@ -62,7 +72,7 @@ export const useAuctions = (pollInterval = 12000): UseAuctionsResult => {
             isLive,
             isEnded,
             timeRemaining: Number(timeRemaining),
-            minimumPrice: parseFloat(formatEther(minimumPrice)).toFixed(3).replace(/\.?0+$/, '') || '0',
+            minimumPrice: formatQie(minimumPrice),
             minimumPriceRaw: minimumPrice,
           };
         } catch (err) {
@@ -74,7 +84,12 @@ export const useAuctions = (pollInterval = 12000): UseAuctionsResult => {
       const results = await Promise.all(auctionPromises);
       const validAuctions = results.filter((a): a is AuctionCardData => a !== null);
 
-      setAuctions(validAuctions);
+      // Defensive: ensure unique vaults in UI even if source list contains duplicates
+      const uniqueByVault = new Map<number, AuctionCardData>();
+      for (const a of validAuctions) uniqueByVault.set(a.vaultId, a);
+      const uniqueAuctions = Array.from(uniqueByVault.values()).sort((a, b) => a.vaultId - b.vaultId);
+
+      setAuctions(uniqueAuctions);
       setError(null);
     } catch (err) {
       console.error('Error fetching auctions:', err);
