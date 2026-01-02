@@ -80,8 +80,6 @@ const CreateVault = () => {
     }
   };
 
- 
-
   // Animation variants
   const stepVariants = {
     enter: { opacity: 0, x: 20 },

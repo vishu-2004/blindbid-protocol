@@ -80,7 +80,12 @@ const CreateVault = () => {
     }
   };
 
- 
+  
+
+  const data = await res.json();
+  console.log("backend response:", data);
+}
+
 
   // Animation variants
   const stepVariants = {
