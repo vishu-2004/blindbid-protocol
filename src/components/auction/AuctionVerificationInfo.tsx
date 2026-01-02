@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
-import { AlertTriangle, Crown, Gem, Sparkles, TrendingUp } from 'lucide-react';
-
+import { AlertTriangle, TrendingUp } from 'lucide-react';
+import { RarityCard } from './RarityCard';
 interface RarityBreakdown {
   legendary: number;
   rare: number;
@@ -78,25 +78,16 @@ export const AuctionVerificationInfo = ({
           </div>
         </div>
 
-        {/* Rarity - Compact */}
-        <div className="flex items-center gap-3 text-sm">
-          {rarityBreakdown.legendary > 0 && (
-            <span className="flex items-center gap-1">
-              <Crown className="w-3.5 h-3.5 text-amber-400" />
-              <span className="text-amber-400 font-medium">{rarityBreakdown.legendary}</span>
-            </span>
+        {/* Rarity Cards - Compact */}
+        <div className="grid grid-cols-3 gap-2">
+          {rarityBreakdown.common > 0 && (
+            <RarityCard rarity="common" count={rarityBreakdown.common} index={0} />
           )}
           {rarityBreakdown.rare > 0 && (
-            <span className="flex items-center gap-1">
-              <Gem className="w-3.5 h-3.5 text-purple-400" />
-              <span className="text-purple-400 font-medium">{rarityBreakdown.rare}</span>
-            </span>
+            <RarityCard rarity="rare" count={rarityBreakdown.rare} index={1} />
           )}
-          {rarityBreakdown.common > 0 && (
-            <span className="flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5 text-muted-foreground" />
-              <span className="text-muted-foreground font-medium">{rarityBreakdown.common}</span>
-            </span>
+          {rarityBreakdown.legendary > 0 && (
+            <RarityCard rarity="legendary" count={rarityBreakdown.legendary} index={2} />
           )}
         </div>
 
@@ -134,33 +125,18 @@ export const AuctionVerificationInfo = ({
         </p>
       </div>
 
-      {/* Rarity Breakdown */}
-      <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
+      {/* Rarity Cards */}
+      <div>
         <p className="text-sm font-medium text-foreground mb-3">Rarity Breakdown</p>
-        <div className="flex flex-wrap items-center gap-4">
-          {rarityBreakdown.legendary > 0 && (
-            <div className="flex items-center gap-2">
-              <Crown className="w-4 h-4 text-amber-400" />
-              <span className="text-sm text-foreground">
-                <span className="font-semibold text-amber-400">{rarityBreakdown.legendary}</span> Legendary
-              </span>
-            </div>
+        <div className="grid grid-cols-3 gap-3">
+          {rarityBreakdown.common > 0 && (
+            <RarityCard rarity="common" count={rarityBreakdown.common} index={0} />
           )}
           {rarityBreakdown.rare > 0 && (
-            <div className="flex items-center gap-2">
-              <Gem className="w-4 h-4 text-purple-400" />
-              <span className="text-sm text-foreground">
-                <span className="font-semibold text-purple-400">{rarityBreakdown.rare}</span> Rare
-              </span>
-            </div>
+            <RarityCard rarity="rare" count={rarityBreakdown.rare} index={1} />
           )}
-          {rarityBreakdown.common > 0 && (
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm text-foreground">
-                <span className="font-semibold">{rarityBreakdown.common}</span> Common
-              </span>
-            </div>
+          {rarityBreakdown.legendary > 0 && (
+            <RarityCard rarity="legendary" count={rarityBreakdown.legendary} index={2} />
           )}
         </div>
       </div>
