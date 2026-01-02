@@ -19,6 +19,7 @@ interface LiveAuctionViewProps {
   canBid: boolean;
   actionPending: string | null;
   isSeller: boolean;
+  isHighestBidder: boolean;
   activeChain: Chain;
   onPlaceBid: () => void;
   onEndAuction: () => void;
@@ -33,6 +34,7 @@ export const LiveAuctionView = ({
   canBid,
   actionPending,
   isSeller,
+  isHighestBidder,
   activeChain,
   onPlaceBid,
   onEndAuction,
@@ -40,8 +42,7 @@ export const LiveAuctionView = ({
   const rarityDistribution = useMemo(() => {
     return generateRarityDistribution(vaultData.nfts.length);
   }, [vaultData.nfts.length]);
-
-  const showEndButton = remainingTime === 0;
+  const showEndButton = remainingTime === 0 && (isSeller || isHighestBidder);
 
   return (
     <motion.div
@@ -182,6 +183,16 @@ export const LiveAuctionView = ({
                     'Finalize Auction'
                   )}
                 </Button>
+              </div>
+            ) : remainingTime === 0 ? (
+              <div className="text-center space-y-2">
+                <div className="flex items-center justify-center gap-2 text-amber-400">
+                  <AlertTriangle className="w-5 h-5" />
+                  <span>Auction time has expired</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Waiting for seller or winner to finalize
+                </p>
               </div>
             ) : (
               <>

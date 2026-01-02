@@ -160,7 +160,7 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
     }
   }, [blockNumber, fetchBlockTimestamp, fetchVaultData]);
 
-  // Calculate remaining time
+  // Calculate remaining time - lock to 0 once expired
   useEffect(() => {
     if (!timing || !blockTimestamp || timing.endTime === BigInt(0)) {
       setRemainingTime(0);
@@ -176,14 +176,30 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
       const effectiveEnd = bidWindowEnd < auctionEnd ? bidWindowEnd : auctionEnd;
       const remaining = effectiveEnd > now ? Number(effectiveEnd - now) : 0;
       
-      setRemainingTime(remaining);
+      return remaining;
     };
 
-    calculateRemaining();
+    const remaining = calculateRemaining();
+    
+    // If already expired, lock at 0 and don't start interval
+    if (remaining <= 0) {
+      setRemainingTime(0);
+      return;
+    }
+    
+    setRemainingTime(remaining);
 
     // Update every second for smoother countdown
     const interval = setInterval(() => {
-      setRemainingTime(prev => Math.max(0, prev - 1));
+      setRemainingTime(prev => {
+        const newValue = prev - 1;
+        // Lock to 0 once expired
+        if (newValue <= 0) {
+          clearInterval(interval);
+          return 0;
+        }
+        return newValue;
+      });
     }, 1000);
 
     return () => clearInterval(interval);
@@ -388,16 +404,30 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
     }
   }, [contractAddress, vaultId, writeContractAsync, activeChain.id, fetchVaultData]);
 
-  // Formatted values
-  const formattedCurrentBid = vaultData ? formatEther(vaultData.currentBid) : '0';
-  const formattedStartPrice = vaultData ? formatEther(vaultData.startPrice) : '0';
-  const nextBidAmount = vaultData ? formatEther(vaultData.currentBid + BigInt(1)) : '0';
+  // Helper to format with max 3 decimal places
+  const formatPrice = (value: bigint): string => {
+    const formatted = formatEther(value);
+    const num = parseFloat(formatted);
+    // Use toFixed(3) but remove trailing zeros
+    return num.toFixed(3).replace(/\.?0+$/, '') || '0';
+  };
 
-  // Is winner check
+  // Formatted values
+  const formattedCurrentBid = vaultData ? formatPrice(vaultData.currentBid) : '0';
+  const formattedStartPrice = vaultData ? formatPrice(vaultData.startPrice) : '0';
+  const nextBidAmount = vaultData ? formatPrice(vaultData.currentBid + BigInt(1)) : '0';
+
+  // Is highest bidder check (works during live auction)
+  const isHighestBidder = useMemo(() => {
+    if (!vaultData || !address) return false;
+    return vaultData.highestBidder.toLowerCase() === address.toLowerCase();
+  }, [vaultData, address]);
+
+  // Is winner check (only after auction ended)
   const isWinner = useMemo(() => {
     if (!vaultData || !address) return false;
-    return vaultData.ended && vaultData.highestBidder.toLowerCase() === address.toLowerCase();
-  }, [vaultData, address]);
+    return vaultData.ended && isHighestBidder;
+  }, [vaultData, address, isHighestBidder]);
 
   // Bid safety check (disable bidding in last 5 seconds)
   const canBid = useMemo(() => {
@@ -419,6 +449,7 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
     formattedCurrentBid,
     formattedStartPrice,
     nextBidAmount,
+    isHighestBidder,
     isWinner,
     canBid,
     address,
