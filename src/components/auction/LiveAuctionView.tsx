@@ -199,7 +199,7 @@ export const LiveAuctionView = ({
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground mb-1">Your Bid Amount</p>
                   <p className="text-2xl font-bold text-foreground">{nextBidAmount} QIE</p>
-                  <p className="text-xs text-muted-foreground mt-1">Current bid + 1 QIE</p>
+                  <p className="text-xs text-muted-foreground mt-1">Current bid + 0.1 QIE</p>
                 </div>
 
                 {remainingTime <= 5 && remainingTime > 0 && (

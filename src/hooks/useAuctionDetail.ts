@@ -334,7 +334,7 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
   const placeBid = useCallback(async () => {
     if (!contractAddress || !vaultId || !vaultData) return;
     
-    const bidAmount = vaultData.currentBid + BigInt(1);
+    const bidAmount = vaultData.currentBid + BigInt('100000000000000000'); // 0.1 QIE
     
     setActionPending('bid');
     try {
@@ -415,7 +415,7 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
   // Formatted values
   const formattedCurrentBid = vaultData ? formatPrice(vaultData.currentBid) : '0';
   const formattedStartPrice = vaultData ? formatPrice(vaultData.startPrice) : '0';
-  const nextBidAmount = vaultData ? formatPrice(vaultData.currentBid + BigInt(1)) : '0';
+  const nextBidAmount = vaultData ? formatPrice(vaultData.currentBid + BigInt('100000000000000000')) : '0'; // 0.1 QIE
 
   // Is highest bidder check (works during live auction)
   const isHighestBidder = useMemo(() => {
