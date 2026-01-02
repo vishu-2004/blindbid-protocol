@@ -1,24 +1,21 @@
-import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Clock, Coins } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { AddressDisplay } from './AddressDisplay';
-import { AuctionVerificationInfo, generateVerificationData } from './AuctionVerificationInfo';
-import { type VaultData } from '@/hooks/useAuctionDetail';
+import { AuctionVerificationInfo } from './AuctionVerificationInfo';
+import { type VaultData, type VerificationData } from '@/hooks/useAuctionDetail';
 
 interface BuyerPreStartViewProps {
   vaultData: VaultData;
+  verificationData: VerificationData | null;
   formattedStartPrice: string;
 }
 
 export const BuyerPreStartView = ({
   vaultData,
+  verificationData,
   formattedStartPrice,
 }: BuyerPreStartViewProps) => {
-  // Generate verification data from backend (mock for now based on NFT count)
-  const verificationData = useMemo(() => {
-    return generateVerificationData(vaultData.nfts.length);
-  }, [vaultData.nfts.length]);
 
   return (
     <motion.div
@@ -86,11 +83,15 @@ export const BuyerPreStartView = ({
         </div>
 
         {/* Verification Info from Backend */}
-        <AuctionVerificationInfo
-          estimatedValueBand={verificationData.estimatedValueBand}
-          rarityBreakdown={verificationData.rarityBreakdown}
-          riskFlags={verificationData.riskFlags}
-        />
+        {verificationData ? (
+          <AuctionVerificationInfo
+            estimatedValueBand={verificationData.estimatedValueBand}
+            rarityBreakdown={verificationData.rarityBreakdown}
+            riskFlags={verificationData.riskFlags}
+          />
+        ) : (
+          <p className="text-muted-foreground text-sm">Verification data not available</p>
+        )}
 
         {/* Hidden contents indicator */}
         <div className="text-center py-6 border border-dashed border-border/50 rounded-lg bg-card/30">
