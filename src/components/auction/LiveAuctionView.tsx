@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { CountdownTimer } from './CountdownTimer';
 import { RarityCard, generateRarityDistribution } from './RarityCard';
 import { AddressDisplay } from './AddressDisplay';
+import { AuctionVerificationInfo, generateVerificationData } from './AuctionVerificationInfo';
 import { type VaultData } from '@/hooks/useAuctionDetail';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { type Chain } from 'viem';
@@ -42,6 +43,12 @@ export const LiveAuctionView = ({
   const rarityDistribution = useMemo(() => {
     return generateRarityDistribution(vaultData.nfts.length);
   }, [vaultData.nfts.length]);
+  
+  // Generate verification data from backend (mock for now based on NFT count)
+  const verificationData = useMemo(() => {
+    return generateVerificationData(vaultData.nfts.length);
+  }, [vaultData.nfts.length]);
+
   const showEndButton = remainingTime === 0 && (isSeller || isHighestBidder);
 
   return (
@@ -74,32 +81,18 @@ export const LiveAuctionView = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Left: Vault Preview */}
         <div className="space-y-6">
-          {/* Rarity Cards */}
+          {/* Verification Info from Backend */}
           <Card className="glass-gold p-6">
             <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
               <Shield className="w-5 h-5 text-primary" />
-              Hidden Vault Contents
+              Vault Valuation
             </h3>
             
-            {/* Estimated Value */}
-            <div className="text-center mb-6 p-4 rounded-lg bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20">
-              <p className="text-sm text-muted-foreground mb-1">Estimated Vault Value</p>
-              <p className="text-3xl font-bold text-primary">~{Math.max(50, Math.round(vaultData.nfts.length * 25))} QIE</p>
-              <p className="text-xs text-muted-foreground mt-1">*Placeholder estimate</p>
-            </div>
-
-            {/* Rarity Grid */}
-            <div className="grid grid-cols-3 gap-3">
-              {rarityDistribution.common > 0 && (
-                <RarityCard rarity="common" count={rarityDistribution.common} index={0} />
-              )}
-              {rarityDistribution.rare > 0 && (
-                <RarityCard rarity="rare" count={rarityDistribution.rare} index={1} />
-              )}
-              {rarityDistribution.legendary > 0 && (
-                <RarityCard rarity="legendary" count={rarityDistribution.legendary} index={2} />
-              )}
-            </div>
+            <AuctionVerificationInfo
+              estimatedValueBand={verificationData.estimatedValueBand}
+              rarityBreakdown={verificationData.rarityBreakdown}
+              riskFlags={verificationData.riskFlags}
+            />
 
             <p className="text-center text-sm text-muted-foreground mt-4">
               Contents will be revealed after auction ends
