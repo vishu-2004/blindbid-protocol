@@ -10,6 +10,8 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
  */
 contract VaultAuction is ReentrancyGuard {
     /* ---------- STRUCTS ---------- */
+   
+uint256 public constant BID_INCREMENT = 0.1 ether;
 
     struct NFTItem {
         address nftAddress;
@@ -180,26 +182,33 @@ contract VaultAuction is ReentrancyGuard {
     }
 
     function bid(uint256 vaultId) external payable nonReentrant {
-        Auction storage a = vaults[vaultId].auction;
+    Auction storage a = vaults[vaultId].auction;
 
-        require(a.active && !a.ended, "Auction inactive");
-        require(block.timestamp <= a.endTime, "Auction duration ended");
-        require(
-            block.timestamp <= a.lastBidTime + a.bidWindow,
-            "Bid window expired"
-        );
-        require(msg.value == a.currentBid + 1, "Bid must be +1");
+    require(a.active && !a.ended, "Auction inactive");
+    require(block.timestamp <= a.endTime, "Auction duration ended");
+    require(
+        block.timestamp <= a.lastBidTime + a.bidWindow,
+        "Bid window expired"
+    );
 
-        if (a.highestBidder != address(0)) {
-            payable(a.highestBidder).transfer(a.currentBid);
-        }
+    // 🔴 CHANGE: fixed increment logic
+    require(
+        msg.value == a.currentBid + BID_INCREMENT,
+        "Bid must be +0.1 QIE"
+    );
 
-        a.currentBid = msg.value;
-        a.highestBidder = msg.sender;
-        a.lastBidTime = block.timestamp;
-
-        emit BidPlaced(vaultId, msg.sender, msg.value);
+    // refund previous bidder
+    if (a.highestBidder != address(0)) {
+        payable(a.highestBidder).transfer(a.currentBid);
     }
+
+    a.currentBid = msg.value;
+    a.highestBidder = msg.sender;
+    a.lastBidTime = block.timestamp;
+
+    emit BidPlaced(vaultId, msg.sender, msg.value);
+}
+
 
     function endAuction(uint256 vaultId) external nonReentrant {
         Auction storage a = vaults[vaultId].auction;
