@@ -1,18 +1,17 @@
-import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Coins, Shield, Zap, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { CountdownTimer } from './CountdownTimer';
-import { RarityCard, generateRarityDistribution } from './RarityCard';
 import { AddressDisplay } from './AddressDisplay';
-import { AuctionVerificationInfo, generateVerificationData } from './AuctionVerificationInfo';
-import { type VaultData } from '@/hooks/useAuctionDetail';
+import { AuctionVerificationInfo } from './AuctionVerificationInfo';
+import { type VaultData, type VerificationData } from '@/hooks/useAuctionDetail';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { type Chain } from 'viem';
 
 interface LiveAuctionViewProps {
   vaultData: VaultData;
+  verificationData: VerificationData | null;
   remainingTime: number;
   formattedCurrentBid: string;
   nextBidAmount: string;
@@ -28,6 +27,7 @@ interface LiveAuctionViewProps {
 
 export const LiveAuctionView = ({
   vaultData,
+  verificationData,
   remainingTime,
   formattedCurrentBid,
   nextBidAmount,
@@ -40,14 +40,6 @@ export const LiveAuctionView = ({
   onPlaceBid,
   onEndAuction,
 }: LiveAuctionViewProps) => {
-  const rarityDistribution = useMemo(() => {
-    return generateRarityDistribution(vaultData.nfts.length);
-  }, [vaultData.nfts.length]);
-  
-  // Generate verification data from backend (mock for now based on NFT count)
-  const verificationData = useMemo(() => {
-    return generateVerificationData(vaultData.nfts.length);
-  }, [vaultData.nfts.length]);
 
   const showEndButton = remainingTime === 0 && (isSeller || isHighestBidder);
 
@@ -88,11 +80,15 @@ export const LiveAuctionView = ({
               Vault Valuation
             </h3>
             
-            <AuctionVerificationInfo
-              estimatedValueBand={verificationData.estimatedValueBand}
-              rarityBreakdown={verificationData.rarityBreakdown}
-              riskFlags={verificationData.riskFlags}
-            />
+            {verificationData ? (
+              <AuctionVerificationInfo
+                estimatedValueBand={verificationData.estimatedValueBand}
+                rarityBreakdown={verificationData.rarityBreakdown}
+                riskFlags={verificationData.riskFlags}
+              />
+            ) : (
+              <p className="text-muted-foreground text-sm">Verification data not available</p>
+            )}
 
             <p className="text-center text-sm text-muted-foreground mt-4">
               Contents will be revealed after auction ends

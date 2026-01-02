@@ -14,6 +14,7 @@ const AuctionDetail = () => {
   
   const {
     vaultData,
+    verificationData,
     currentView,
     remainingTime,
     formattedCurrentBid,
@@ -59,6 +60,7 @@ const AuctionDetail = () => {
         return vaultData ? (
           <BuyerPreStartView
             vaultData={vaultData}
+            verificationData={verificationData}
             formattedStartPrice={formattedStartPrice}
           />
         ) : null;
@@ -67,6 +69,7 @@ const AuctionDetail = () => {
         return vaultData ? (
           <LiveAuctionView
             vaultData={vaultData}
+            verificationData={verificationData}
             remainingTime={remainingTime}
             formattedCurrentBid={formattedCurrentBid}
             nextBidAmount={nextBidAmount}

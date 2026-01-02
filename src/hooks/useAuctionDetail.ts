@@ -32,6 +32,22 @@ export interface AuctionTiming {
   ended: boolean;
 }
 
+export interface VerificationData {
+  estimatedValueBand: {
+    label: string;
+    displayRange: string;
+    confidence: string;
+  };
+  rarityBreakdown: {
+    legendary: number;
+    rare: number;
+    common: number;
+  };
+  riskFlags: {
+    freshMintDetected: boolean;
+  };
+}
+
 export type AuctionView = 
   | 'seller-prestart' 
   | 'buyer-prestart' 
@@ -50,6 +66,7 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
 
   const [vaultData, setVaultData] = useState<VaultData | null>(null);
   const [timing, setTiming] = useState<AuctionTiming | null>(null);
+  const [verificationData, setVerificationData] = useState<VerificationData | null>(null);
   const [isSeller, setIsSeller] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -123,6 +140,37 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
       });
 
       setBlockTimestamp(block.timestamp);
+
+      // Fetch verification data from backend for each NFT
+      try {
+        const nftItems = vault[2] as NFTItem[];
+        if (nftItems.length > 0) {
+          const response = await fetch('http://localhost:4000/api/vault/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              nfts: nftItems.map((nft: NFTItem) => ({
+                contract: nft.nftAddress,
+                tokenId: nft.tokenId.toString(),
+              })),
+            }),
+          });
+          
+          if (response.ok) {
+            const verifyResult = await response.json();
+            if (verifyResult.approved) {
+              setVerificationData({
+                estimatedValueBand: verifyResult.estimatedValueBand,
+                rarityBreakdown: verifyResult.rarityBreakdown,
+                riskFlags: verifyResult.riskFlags,
+              });
+            }
+          }
+        }
+      } catch (verifyErr) {
+        console.error('Failed to fetch verification data:', verifyErr);
+        // Continue without verification data
+      }
 
       // Check if current user is seller
       if (address) {
@@ -437,6 +485,7 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
   return {
     vaultData,
     timing,
+    verificationData,
     isSeller,
     isLoading,
     error,

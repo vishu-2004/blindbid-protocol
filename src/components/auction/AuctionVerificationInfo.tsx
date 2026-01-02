@@ -173,30 +173,3 @@ export const AuctionVerificationInfo = ({
     </motion.div>
   );
 };
-
-// Helper to generate mock verification data based on NFT count
-// In production, this would come from the backend/stored data
-export const generateVerificationData = (nftCount: number) => {
-  const legendary = Math.floor(nftCount * 0.1);
-  const rare = Math.floor(nftCount * 0.3);
-  const common = nftCount - legendary - rare;
-
-  const baseValue = nftCount * 0.3;
-  const hasFreshMint = Math.random() > 0.7;
-
-  return {
-    estimatedValueBand: {
-      label: baseValue >= 0.7 ? 'High' : baseValue >= 0.2 ? 'Medium' : 'Low',
-      displayRange: `${(baseValue * 1.5).toFixed(2)} – ${(baseValue * 4).toFixed(2)} QIE`,
-      confidence: hasFreshMint ? 'Low' : 'Medium',
-    },
-    rarityBreakdown: {
-      legendary,
-      rare,
-      common,
-    },
-    riskFlags: {
-      freshMintDetected: hasFreshMint,
-    },
-  };
-};
