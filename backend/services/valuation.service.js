@@ -2,44 +2,74 @@ export function estimateValue(indexedNFTs, rarity) {
   let estimatedMinValue = 0;
   let hasFreshMint = false;
 
+  // -----------------------
+  // 1️⃣ Base valuation
+  // -----------------------
   indexedNFTs.forEach(nft => {
     let base = 0.5;
 
-    // 🔹 CHANGE: track fresh mint
+    // 🔴 CHANGE: fresh mint penalty + flag
     if (nft.transferHistory.isFreshMint) {
       base -= 0.2;
       hasFreshMint = true;
     }
 
+    // 🔴 CHANGE: metadata penalties
     if (nft.metadataFlags.missingMetadata) base -= 0.2;
     if (nft.metadataFlags.emptyTraits) base -= 0.1;
 
-    // 🔹 CHANGE: ensure non-zero valuation
+    // 🔴 CHANGE: enforce minimum value
     estimatedMinValue += Math.max(base, 0.1);
   });
 
-  // 🔹 CHANGE: protocol-defined floor price
+  // -----------------------
+  // 2️⃣ Floor price logic
+  // -----------------------
+  // 🔴 CHANGE: protocol-defined floors
   const floorPrice = hasFreshMint ? 0.005 : 0.02;
 
-  // 🔹 CHANGE: risk-based multiplier
+  // -----------------------
+  // 3️⃣ Start price logic
+  // -----------------------
+  // 🔴 CHANGE: risk-based multiplier
   const multiplier = hasFreshMint ? 0.05 : 0.10;
 
-  // 🔹 CHANGE: final start price calculation
   const startPrice = Math.max(
     floorPrice,
     estimatedMinValue * multiplier
   );
 
+  // -----------------------
+  // 4️⃣ Estimated value band (for bidders)
+  // -----------------------
+  // 🔴 CHANGE: fuzzy range (not exact min/max)
+  const bandLow = estimatedMinValue * 1.5;
+  const bandHigh = estimatedMinValue * 4;
+
+  let bandLabel = "Low";
+  if (estimatedMinValue >= 0.2 && estimatedMinValue < 0.7) bandLabel = "Medium";
+  if (estimatedMinValue >= 0.7) bandLabel = "High";
+
+  // -----------------------
+  // 5️⃣ Final response
+  // -----------------------
   return {
     totalNFTs: indexedNFTs.length,
 
-    // 🔹 CHANGE: only return startPrice
+    // 🔴 CHANGE: backend-calculated start price
     startPrice: Number(startPrice.toFixed(4)),
     unit: "qie",
 
+    // 🔴 CHANGE: bidder-visible estimate
+    estimatedValueBand: {
+      label: bandLabel,
+      displayRange: `${bandLow.toFixed(2)} – ${bandHigh.toFixed(2)} QIE`,
+      confidence: hasFreshMint ? "Low" : "Medium"
+    },
+
     rarityBreakdown: rarity,
 
-    // 🔹 OPTIONAL: useful for UI badges / judge explanation
+    // 🔴 CHANGE: explicit risk flags
     riskFlags: {
       freshMintDetected: hasFreshMint
     }
