@@ -14,6 +14,39 @@ interface NFTInfo {
   tokenIds: bigint[];
 }
 
+// Backend verification response types
+export interface RarityBreakdown {
+  legendary: number;
+  rare: number;
+  common: number;
+}
+
+export interface EstimatedValueBand {
+  label: string;
+  displayRange: string;
+  confidence: string;
+}
+
+export interface RiskFlags {
+  freshMintDetected: boolean;
+}
+
+export interface VerificationSummary {
+  totalNFTs: number;
+  startPrice: number;
+  unit: string;
+  estimatedValueBand: EstimatedValueBand;
+  rarityBreakdown: RarityBreakdown;
+  riskFlags: RiskFlags;
+}
+
+export interface VerificationResult {
+  status: string;
+  approved: boolean;
+  reason: string;
+  summary: VerificationSummary;
+}
+
 interface UseCreateVaultResult {
   currentStep: Step;
   isProcessing: boolean;
@@ -21,6 +54,8 @@ interface UseCreateVaultResult {
   vaultId: bigint | null;
   error: string | null;
   success: string | null;
+  verificationResult: VerificationResult | null;
+  maxStartPrice: number | null;
   
   // Step 1
   verifyAndApproveNFTs: (nftAddress: string, tokenIds: string) => Promise<boolean>;
@@ -34,6 +69,8 @@ interface UseCreateVaultResult {
   reset: () => void;
 }
 
+const BACKEND_URL = 'http://localhost:4000';
+
 export const useCreateVault = (): UseCreateVaultResult => {
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -41,6 +78,8 @@ export const useCreateVault = (): UseCreateVaultResult => {
   const [vaultId, setVaultId] = useState<bigint | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [verificationResult, setVerificationResult] = useState<VerificationResult | null>(null);
+  const [maxStartPrice, setMaxStartPrice] = useState<number | null>(null);
 
   const publicClient = usePublicClient({ chainId: activeChain.id });
   const { writeContractAsync } = useWriteContract();
@@ -55,6 +94,8 @@ export const useCreateVault = (): UseCreateVaultResult => {
     setVaultId(null);
     setError(null);
     setSuccess(null);
+    setVerificationResult(null);
+    setMaxStartPrice(null);
   }, []);
 
   // Clear messages
@@ -90,22 +131,51 @@ export const useCreateVault = (): UseCreateVaultResult => {
           throw new Error('Please enter at least one token ID');
         }
 
+        // Step 1a: Call backend verification API
+        const nftsPayload = tokenIds.map((tokenId) => ({
+          contract: nftAddress,
+          tokenId: tokenId.toString(),
+        }));
+
+        const verifyResponse = await fetch(`${BACKEND_URL}/api/vault/verify`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ nfts: nftsPayload }),
+        });
+
+        if (!verifyResponse.ok) {
+          const errorData = await verifyResponse.json();
+          throw new Error(errorData.error || 'Verification failed');
+        }
+
+        const verifyData: VerificationResult = await verifyResponse.json();
+
+        if (!verifyData.approved) {
+          throw new Error(verifyData.reason || 'NFTs not approved');
+        }
+
+        // Store verification result and max start price
+        setVerificationResult(verifyData);
+        setMaxStartPrice(verifyData.summary.startPrice);
+
         // Store NFT info for next steps
         setNftInfo({ nftAddress: address, tokenIds });
 
-        // Approve contract for all tokens using setApprovalForAll
+        // Step 1b: Approve contract for all tokens using setApprovalForAll
         const ERC721_ABI = [
-  {
-    "inputs": [
-      { "name": "operator", "type": "address" },
-      { "name": "approved", "type": "bool" }
-    ],
-    "name": "setApprovalForAll",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  }
-];
+          {
+            inputs: [
+              { name: 'operator', type: 'address' },
+              { name: 'approved', type: 'bool' },
+            ],
+            name: 'setApprovalForAll',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+          },
+        ];
 
         const hash = await writeContractAsync({
           address,
@@ -118,13 +188,13 @@ export const useCreateVault = (): UseCreateVaultResult => {
         // Wait for transaction confirmation
         await publicClient?.waitForTransactionReceipt({ hash });
 
-        setSuccess('NFTs approved successfully');
+        setSuccess('NFTs verified and approved successfully');
         setCurrentStep(2);
         setIsProcessing(false);
         return true;
       } catch (err) {
-        console.error('Approval error:', err);
-        setError(err instanceof Error ? err.message : 'Failed to approve NFTs');
+        console.error('Verification/Approval error:', err);
+        setError(err instanceof Error ? err.message : 'Failed to verify/approve NFTs');
         setIsProcessing(false);
         return false;
       }
@@ -208,6 +278,11 @@ export const useCreateVault = (): UseCreateVaultResult => {
           throw new Error('Please enter a valid start price');
         }
 
+        // Validate against max start price from backend
+        if (maxStartPrice !== null && parseFloat(startPrice) > maxStartPrice) {
+          throw new Error(`Start price cannot exceed ${maxStartPrice} QIE (backend limit)`);
+        }
+
         if (durationMinutes <= 0) {
           throw new Error('Please enter a valid duration');
         }
@@ -236,7 +311,7 @@ export const useCreateVault = (): UseCreateVaultResult => {
         return false;
       }
     },
-    [contractAddress, vaultId, publicClient, writeContractAsync]
+    [contractAddress, vaultId, maxStartPrice, publicClient, writeContractAsync]
   );
 
   return {
@@ -246,6 +321,8 @@ export const useCreateVault = (): UseCreateVaultResult => {
     vaultId,
     error,
     success,
+    verificationResult,
+    maxStartPrice,
     verifyAndApproveNFTs,
     createVault,
     createAuction,

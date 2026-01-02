@@ -1,7 +1,9 @@
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Clock, Coins } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { AddressDisplay } from './AddressDisplay';
+import { AuctionVerificationInfo, generateVerificationData } from './AuctionVerificationInfo';
 import { type VaultData } from '@/hooks/useAuctionDetail';
 
 interface BuyerPreStartViewProps {
@@ -13,6 +15,11 @@ export const BuyerPreStartView = ({
   vaultData,
   formattedStartPrice,
 }: BuyerPreStartViewProps) => {
+  // Generate verification data from backend (mock for now based on NFT count)
+  const verificationData = useMemo(() => {
+    return generateVerificationData(vaultData.nfts.length);
+  }, [vaultData.nfts.length]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -78,8 +85,15 @@ export const BuyerPreStartView = ({
           </div>
         </div>
 
+        {/* Verification Info from Backend */}
+        <AuctionVerificationInfo
+          estimatedValueBand={verificationData.estimatedValueBand}
+          rarityBreakdown={verificationData.rarityBreakdown}
+          riskFlags={verificationData.riskFlags}
+        />
+
         {/* Hidden contents indicator */}
-        <div className="text-center py-8 border border-dashed border-border/50 rounded-lg bg-card/30">
+        <div className="text-center py-6 border border-dashed border-border/50 rounded-lg bg-card/30">
           <div className="text-4xl mb-3">🔒</div>
           <p className="text-muted-foreground">Vault contents are hidden until auction ends</p>
           <p className="text-sm text-muted-foreground/70 mt-1">

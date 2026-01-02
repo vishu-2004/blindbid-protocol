@@ -1,15 +1,16 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAccount } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, CheckCircle, XCircle, Vault, Gavel, ShieldCheck } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Vault, Gavel, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useCreateVault } from '@/hooks/useCreateVault';
 import StepIndicator from '@/components/StepIndicator';
+import { VerificationSummary } from '@/components/VerificationSummary';
 import { isContractConfigured } from '@/utils/contract';
 
 const CreateVault = () => {
@@ -24,6 +25,8 @@ const CreateVault = () => {
     vaultId,
     error,
     success,
+    verificationResult,
+    maxStartPrice,
     verifyAndApproveNFTs,
     createVault,
     createAuction,
@@ -42,13 +45,26 @@ const CreateVault = () => {
   const [startPrice, setStartPrice] = useState('');
   const [durationMinutes, setDurationMinutes] = useState('');
 
+  // Start price validation
+  const startPriceExceedsMax = useMemo(() => {
+    if (maxStartPrice === null || !startPrice) return false;
+    return parseFloat(startPrice) > maxStartPrice;
+  }, [startPrice, maxStartPrice]);
+
+  const isStep3Valid = useMemo(() => {
+    return startPrice && 
+           durationMinutes && 
+           parseFloat(startPrice) > 0 && 
+           !startPriceExceedsMax;
+  }, [startPrice, durationMinutes, startPriceExceedsMax]);
+
   // Handle Step 1 submission
   const handleVerifyAndApprove = async () => {
     const result = await verifyAndApproveNFTs(nftAddress, tokenIds);
     if (result) {
       toast({
-        title: 'NFTs Approved',
-        description: 'Your NFTs have been approved for the vault contract.',
+        title: 'NFTs Verified & Approved',
+        description: 'Your NFTs have been verified and approved for the vault contract.',
       });
     }
   };
@@ -79,8 +95,6 @@ const CreateVault = () => {
       }, 1500);
     }
   };
-
- 
 
   // Animation variants
   const stepVariants = {
@@ -196,7 +210,7 @@ const CreateVault = () => {
                   {isProcessing ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Approving NFTs...
+                      Verifying & Approving...
                     </>
                   ) : (
                     'Verify & Approve NFTs'
@@ -222,6 +236,11 @@ const CreateVault = () => {
                     Step 2: Create Vault
                   </h2>
                 </div>
+
+                {/* Verification Summary */}
+                {verificationResult && (
+                  <VerificationSummary result={verificationResult} />
+                )}
 
                 {/* NFT Summary */}
                 {nftInfo && (
@@ -318,6 +337,15 @@ const CreateVault = () => {
                   </div>
                 )}
 
+                {/* Max Start Price Info */}
+                {maxStartPrice !== null && (
+                  <div className="bg-primary/10 rounded-lg p-3 border border-primary/30">
+                    <p className="text-sm text-primary">
+                      Maximum allowed start price: <span className="font-semibold">{maxStartPrice} QIE</span>
+                    </p>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-2">
@@ -327,12 +355,19 @@ const CreateVault = () => {
                       type="number"
                       step="0.001"
                       min="0"
-                      placeholder="0.1"
+                      max={maxStartPrice ?? undefined}
+                      placeholder={maxStartPrice ? `Max: ${maxStartPrice}` : '0.1'}
                       value={startPrice}
                       onChange={(e) => setStartPrice(e.target.value)}
                       disabled={isProcessing}
-                      className="bg-background/50"
+                      className={`bg-background/50 ${startPriceExceedsMax ? 'border-destructive' : ''}`}
                     />
+                    {startPriceExceedsMax && (
+                      <p className="text-xs text-destructive mt-1 flex items-center gap-1">
+                        <AlertTriangle className="w-3 h-3" />
+                        Exceeds maximum of {maxStartPrice} QIE
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-2">
@@ -358,7 +393,7 @@ const CreateVault = () => {
                 <Button
                   className="w-full gradient-gold text-primary-foreground font-semibold"
                   onClick={handleCreateAuction}
-                  disabled={isProcessing || !startPrice || !durationMinutes}
+                  disabled={isProcessing || !isStep3Valid}
                 >
                   {isProcessing ? (
                     <>
