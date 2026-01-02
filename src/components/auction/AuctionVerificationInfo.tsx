@@ -30,6 +30,10 @@ export const AuctionVerificationInfo = ({
   riskFlags,
   compact = false,
 }: AuctionVerificationInfoProps) => {
+  // Return null if required data is missing
+  if (!estimatedValueBand || !rarityBreakdown || !riskFlags) {
+    return null;
+  }
   const getValueBandColor = (label: string) => {
     switch (label.toLowerCase()) {
       case 'high':
