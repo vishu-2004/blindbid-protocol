@@ -80,7 +80,7 @@ const CreateVault = () => {
     }
   };
 
- 
+  //verifyNFTs
 
   // Animation variants
   const stepVariants = {

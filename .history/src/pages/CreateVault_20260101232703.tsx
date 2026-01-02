@@ -80,7 +80,19 @@ const CreateVault = () => {
     }
   };
 
- 
+  async function verifyNFTs() {
+  const res = await fetch("http://localhost:4000/api/vault/verify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      nfts: selectedNFTs
+    })
+  });
+
+  const data = await res.json();
+  console.log("backend response:", data);
+}
+
 
   // Animation variants
   const stepVariants = {
