@@ -1,17 +1,18 @@
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { http } from 'wagmi';
-import { qieTestnet, qieMainnet, hardhatLocal } from './chains';
+import { getActiveNetwork } from './chains';
 
 const projectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || 'demo-project-id';
+
+// Get the single active chain based on environment
+const activeChain = getActiveNetwork();
 
 export const config = getDefaultConfig({
   appName: 'BlindBid',
   projectId,
-  chains: [qieTestnet, qieMainnet, hardhatLocal],
+  chains: [activeChain],
   transports: {
-    [qieTestnet.id]: http('https://rpc1testnet.qie.digital/'),
-    [qieMainnet.id]: http('https://rpc1mainnet.qie.digital/'),
-    [hardhatLocal.id]: http('http://127.0.0.1:8545'),
+    [activeChain.id]: http(activeChain.rpcUrls.default.http[0]),
   },
   ssr: false,
 });

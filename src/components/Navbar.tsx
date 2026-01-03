@@ -79,7 +79,7 @@ export const Navbar = () => {
         <div className="flex items-center gap-4">
           <ConnectButton 
             showBalance={false}
-            chainStatus="icon"
+            chainStatus="none"
             accountStatus="address"
           />
         </div>
