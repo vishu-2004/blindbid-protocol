@@ -18,11 +18,12 @@ async function main() {
     for (let i = 0; i < uris.length; i++) {
     // 🔴 CHANGE: read tokenCounter BEFORE mint
     const tokenId = await monkeyNFT.tokenCounter();
+    const address = "0x058Ae0989eD9571B16ff50681c774e6fb2fC066b";
 
-    const tx = await monkeyNFT.mintMonkey(owner.address, uris[i]);
+    const tx = await monkeyNFT.mintMonkey(address, uris[i]);
     await tx.wait();
 
-    console.log(`✅ Minted tokenId ${tokenId.toString()} → ${owner.address}`);
+    console.log(`✅ Minted tokenId ${tokenId.toString()} → ${address}`);
   }
 
 }
