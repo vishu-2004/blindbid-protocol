@@ -5,7 +5,7 @@ async function main() {
 
   const monkeyNFT = await hre.ethers.getContractAt(
     "MonkeyNFT",
-    "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+    "0xb8ca02466Ed3DA6f9E68E5E53bF54eDdE1CfdE3F"
   );
 
   // 🔴 CHANGE: IPFS metadata URIs
@@ -15,13 +15,16 @@ async function main() {
     "ipfs://bafkreia7so4duzlvqit4rcphvdatvxtptzieak5scokjkxl2n24u4azz3y",
   ];
 
-  for (let i = 0; i < uris.length; i++) {
-    // 🔴 CHANGE: minting NFT to owner
+    for (let i = 0; i < uris.length; i++) {
+    // 🔴 CHANGE: read tokenCounter BEFORE mint
+    const tokenId = await monkeyNFT.tokenCounter();
+
     const tx = await monkeyNFT.mintMonkey(owner.address, uris[i]);
     await tx.wait();
 
-    console.log(`Minted NFT ${i} to ${owner.address}`);
+    console.log(`✅ Minted tokenId ${tokenId.toString()} → ${owner.address}`);
   }
+
 }
 
 main().catch((error) => {

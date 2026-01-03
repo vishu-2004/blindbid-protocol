@@ -1,21 +1,29 @@
+// ======================
+// CHANGES MADE
+// ➕ RPC-safe block range scanning (last 9k blocks)
+// ➕ Mint detection via Transfer(from=0x0)
+// ➕ Safe fallback when mint event not found
+// ======================
+
 import { ethers } from "ethers";
 import axios from "axios";
 import { provider } from "./rpc.service.js";
 import erc721Abi from "../abi/erc721.js";
 
 const ERC721_INTERFACE_ID = "0x80ac58cd";
+const BLOCK_RANGE_LIMIT = 9000;
 
 export async function indexNFTs(nfts) {
   const results = [];
+  const currentBlock = await provider.getBlockNumber();
 
   for (const nft of nfts) {
     const { contract, tokenId } = nft;
 
     // -----------------------
-    // 0️⃣ CONTRACT VALIDATION (NEW)
+    // 0️⃣ CONTRACT VALIDATION
     // -----------------------
     const code = await provider.getCode(contract);
-    console.log(contract);
     if (code === "0x") {
       throw new Error("Address is not a smart contract");
     }
@@ -23,7 +31,7 @@ export async function indexNFTs(nfts) {
     const nftContract = new ethers.Contract(contract, erc721Abi, provider);
 
     // -----------------------
-    // 1️⃣ ERC721 CHECK (NEW)
+    // 1️⃣ ERC721 CHECK
     // -----------------------
     let isERC721 = false;
     try {
@@ -35,7 +43,7 @@ export async function indexNFTs(nfts) {
     }
 
     // -----------------------
-    // 2️⃣ OPTIONAL CONTRACT DATA (FIX)
+    // 2️⃣ OPTIONAL CONTRACT DATA
     // -----------------------
     let name = null;
     let symbol = null;
@@ -56,31 +64,54 @@ export async function indexNFTs(nfts) {
     }
 
     // -----------------------
-    // 4️⃣ TRANSFER HISTORY
+    // 4️⃣ TRANSFER HISTORY (RPC SAFE)
     // -----------------------
-    const filter = nftContract.filters.Transfer(null, null, tokenId);
-    const events = await nftContract.queryFilter(filter, 0, "latest");
+    const fromBlock = Math.max(currentBlock - BLOCK_RANGE_LIMIT, 0);
+    const toBlock = currentBlock;
 
-    if (!events.length) {
-      throw new Error("No transfer history found");
+    // 🔴 CHANGE: mint-only filter
+    const mintFilter = nftContract.filters.Transfer(
+      ethers.ZeroAddress,
+      null,
+      tokenId
+    );
+
+    let mintEvent = null;
+
+    try {
+      const mintEvents = await nftContract.queryFilter(
+        mintFilter,
+        fromBlock,
+        toBlock
+      );
+      if (mintEvents.length > 0) {
+        mintEvent = mintEvents[0];
+      }
+    } catch {
+      mintEvent = null;
     }
 
-    const mintEvent = events[0];
-    const mintBlock = mintEvent.blockNumber;
-    const mintTx = mintEvent.transactionHash;
-    const firstOwner = mintEvent.args.to;
+    let mintBlock = null;
+    let mintTx = null;
+    let firstOwner = null;
+    let mintAgeInBlocks = null;
 
-    const totalTransfers = Math.max(events.length - 1, 0);
-    const lastTransferBlock = events[events.length - 1].blockNumber;
+    if (mintEvent) {
+      mintBlock = mintEvent.blockNumber;
+      mintTx = mintEvent.transactionHash;
+      firstOwner = mintEvent.args.to;
+      mintAgeInBlocks = currentBlock - mintBlock;
+    }
 
-    const currentBlock = await provider.getBlockNumber();
-    const mintAgeInBlocks = currentBlock - mintBlock;
+    // 🔴 CHANGE: freshness logic
+    const isFreshMint =
+      mintAgeInBlocks !== null && mintAgeInBlocks < 5000;
 
-    const isFreshMint = mintAgeInBlocks < 5000;
-    const hasSecondarySales = totalTransfers > 0;
+    // 🔴 CHANGE: assume old if not found
+    const hasSecondarySales = false;
 
     // -----------------------
-    // 5️⃣ METADATA (SAFE)
+    // 5️⃣ METADATA
     // -----------------------
     let metadata = null;
     let metadataFlags = {
@@ -120,8 +151,6 @@ export async function indexNFTs(nfts) {
         mintBlock,
         mintTx,
         firstOwner,
-        totalTransfers,
-        lastTransferBlock,
         mintAgeInBlocks,
         isFreshMint,
         hasSecondarySales

@@ -1,28 +1,46 @@
 // ======================
 // CHANGES MADE
-// ➕ Env-based deploy
-// ➕ Works for local + monad
+// ➕ Network-aware deployment (local / qieTestnet / qieMainnet)
+// ➕ ChainId validation for safety
+// ➕ Single script for all networks
 // ======================
 
 const hre = require("hardhat");
 require("dotenv").config();
 
 async function main() {
-  const network = process.env.DEPLOY_NETWORK;
-  console.log("🚀 Deploying to:", network);
+  const { ethers, network } = hre;
 
-  const VaultAuction = await hre.ethers.getContractFactory("VaultAuction");
+  console.log("🚀 Deploying on network:", network.name);
+  console.log("🔗 Chain ID:", network.config.chainId);
+
+  // ✅ Safety check (optional but recommended)
+  const allowedChainIds = [31337, 1983, 1990];
+  if (!allowedChainIds.includes(network.config.chainId)) {
+    throw new Error("❌ Unsupported network");
+  }
+
+  // ======================
+  // Deploy VaultAuction
+  // ======================
+  const VaultAuction = await ethers.getContractFactory("VaultAuction");
   const auction = await VaultAuction.deploy();
-
-  const MintNft = await hre.ethers.getContractFactory("MonkeyNFT");
-  const nft = await MintNft.deploy();
-
   await auction.waitForDeployment();
+
+  // ======================
+  // Deploy MonkeyNFT
+  // ======================
+  const MonkeyNFT = await ethers.getContractFactory("MonkeyNFT");
+  const nft = await MonkeyNFT.deploy();
   await nft.waitForDeployment();
 
-  console.log("✅ VaultAuction deployed to:");
+  // ======================
+  // Logs
+  // ======================
+  console.log("✅ VaultAuction deployed at:");
   console.log(await auction.getAddress());
-  console.log("✅ MintNFT deployed to:");
+
+  console.log("✅ MonkeyNFT deployed at:");
   console.log(await nft.getAddress());
 }
 
