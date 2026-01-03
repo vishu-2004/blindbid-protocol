@@ -4,6 +4,7 @@ import { type Address, type Abi, parseEther } from 'viem';
 import { getContractAddress } from '@/utils/contract';
 import { getActiveNetwork } from '@/config/chains';
 import VaultAuctionABI from '@/abi/VaultAuction.json';
+import { error } from 'console';
 
 const activeChain = getActiveNetwork();
 
@@ -68,8 +69,10 @@ interface UseCreateVaultResult {
   
   reset: () => void;
 }
-
-const BACKEND_URL = 'http://localhost:4000';
+if(!import.meta.env.API_BASE_URL){
+  throw new error("api base url not set");
+}
+const BACKEND_URL = import.meta.env.API_BASE_URL;
 
 export const useCreateVault = (): UseCreateVaultResult => {
   const [currentStep, setCurrentStep] = useState<Step>(1);

@@ -75,7 +75,7 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
   const [actionPending, setActionPending] = useState<string | null>(null);
 
   const contractAddress = getContractAddress();
-
+  const BACKEND_URL = import.meta.env.API_BASE_URL;
   // Fetch block timestamp
   const fetchBlockTimestamp = useCallback(async () => {
     if (!publicClient) return;
@@ -145,7 +145,7 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
       try {
         const nftItems = vault[2] as NFTItem[];
         if (nftItems.length > 0) {
-          const response = await fetch('http://localhost:4000/api/vault/verify', {
+          const response = await fetch(`${BACKEND_URL}/api/vault/verify`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
