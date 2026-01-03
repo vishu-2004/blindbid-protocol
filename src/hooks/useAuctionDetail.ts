@@ -158,13 +158,16 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
           
           if (response.ok) {
             const verifyResult = await response.json();
+
             if (verifyResult.approved) {
               setVerificationData({
-                estimatedValueBand: verifyResult.estimatedValueBand,
-                rarityBreakdown: verifyResult.rarityBreakdown,
-                riskFlags: verifyResult.riskFlags,
+                estimatedValueBand: verifyResult.summary.estimatedValueBand,
+                rarityBreakdown: verifyResult.summary.rarityBreakdown,
+                riskFlags: verifyResult.summary.riskFlags,
               });
             }
+            console.log("cdsv",verifyResult);
+
           }
         }
       } catch (verifyErr) {

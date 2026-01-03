@@ -2,8 +2,8 @@ import { defineChain } from 'viem';
 
 // QIE Testnet Chain Definition
 export const qieTestnet = defineChain({
-  id: 8227,
-  name: 'QIE Testnet',
+  id: 1983,
+  name: 'QIE testnet',
   nativeCurrency: {
     decimals: 18,
     name: 'QIE',
@@ -17,7 +17,7 @@ export const qieTestnet = defineChain({
   blockExplorers: {
     default: {
       name: 'QIE Testnet Explorer',
-      url: 'https://testnet.qiescan.io',
+      url: 'https://testnet.qie.digital/',
     },
   },
   testnet: true,
@@ -25,22 +25,22 @@ export const qieTestnet = defineChain({
 
 // QIE Mainnet Chain Definition
 export const qieMainnet = defineChain({
-  id: 8228,
-  name: 'QIE Mainnet',
+  id: 1990,
+  name: 'QIEMainnet',
   nativeCurrency: {
     decimals: 18,
     name: 'QIE',
-    symbol: 'QIE',
+    symbol: 'QIEV3',
   },
   rpcUrls: {
     default: {
-      http: ['https://rpc1mainnet.qie.digital/'],
+      http: ['https://rpc5mainnet.qie.digital/'],
     },
   },
   blockExplorers: {
     default: {
       name: 'QIE Explorer',
-      url: 'https://qiescan.io',
+      url: 'https://mainnet.qie.digital/',
     },
   },
   testnet: false,
@@ -65,6 +65,7 @@ export const hardhatLocal = defineChain({
 
 // Get active chain based on environment
 export const getActiveNetwork = () => {
+  console.log("network in env",import.meta.env.VITE_ACTIVE_NETWORK);
   const network = import.meta.env.VITE_ACTIVE_NETWORK || 'testnet';
   
   switch (network) {

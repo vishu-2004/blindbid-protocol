@@ -149,7 +149,7 @@ const Landing = () => {
           >
             BlindBid is a fully on-chain auction protocol where sellers bundle NFTs 
             into sealed vaults and buyers bid without knowing the exact assets inside. 
-            Smart contracts enforce all auction logic — enabling trustless price discovery 
+            Smart contracts enforce all auction logic enabling trustless price discovery 
             with no backend or intermediaries.
           </motion.p>
 
