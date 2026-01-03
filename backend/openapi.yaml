@@ -1,0 +1,51 @@
+openapi: 3.0.3
+info:
+  title: BlindBid Backend API
+  version: 1.0.0
+  description: API used by the BlindBid frontend to verify NFT vaults
+servers:
+  - url: http://localhost:3001
+paths:
+  /api/vault/verify:
+    post:
+      summary: Verify a collection of NFTs for use in a vault
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nfts]
+              properties:
+                nfts:
+                  type: array
+                  items:
+                    type: object
+                    required: [contract, tokenId]
+                    properties:
+                      contract:
+                        type: string
+                        description: ERC-721 contract address
+                      tokenId:
+                        type: string
+                        description: Token ID
+      responses:
+        '200':
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  approved:
+                    type: boolean
+                  reason:
+                    type: string
+                  summary:
+                    type: object
+        '400':
+          description: Bad request
+        '500':
+          description: Server error
