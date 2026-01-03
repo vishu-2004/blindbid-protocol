@@ -1,0 +1,64 @@
+# =========================
+# ENV FILES (CRITICAL)
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# NODE / JS
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# =========================
+# FRONTEND BUILDS
+# =========================
+frontend/dist/
+frontend/.vite/
+frontend/.next/
+frontend/out/
+
+# =========================
+# BACKEND BUILDS
+# =========================
+backend/dist/
+backend/build/
+backend/node_modules/
+
+# =========================
+# SMART CONTRACT ARTIFACTS
+# =========================
+contracts/artifacts/
+contracts/cache/
+contracts/typechain/
+contracts/node_modules/
+coverage/
+coverage.json
+
+# =========================
+# HARDHAT / FOUNDRY
+# =========================
+*.dbg.json
+*.log
+
+# =========================
+# OS / EDITOR
+# =========================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# =========================
+# VERCEL / DEPLOY
+# =========================
+.vercel/
+
+# =========================
+# MISC
+# =========================
+*.tgz
+*.swp
