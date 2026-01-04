@@ -34,7 +34,7 @@ export const qieMainnet = defineChain({
   },
   rpcUrls: {
     default: {
-      http: ['https://rpc5mainnet.qie.digital/'],
+      http: ['https://rpc1mainnet.qie.digital/'],
     },
   },
   blockExplorers: {

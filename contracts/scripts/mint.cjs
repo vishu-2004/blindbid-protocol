@@ -18,7 +18,7 @@ async function main() {
     for (let i = 0; i < uris.length; i++) {
     // 🔴 CHANGE: read tokenCounter BEFORE mint
     const tokenId = await monkeyNFT.tokenCounter();
-    const address = "0x058Ae0989eD9571B16ff50681c774e6fb2fC066b";
+    const address = "0xA2aE46532e6F1b24fF0C309e3975180055a4b23C";
 
     const tx = await monkeyNFT.mintMonkey(address, uris[i]);
     await tx.wait();

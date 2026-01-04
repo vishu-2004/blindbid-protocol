@@ -34,7 +34,7 @@ module.exports = {
     // QIE Mainnet
     // ======================
     qieMainnet: {
-      url: "https://rpc5mainnet.qie.digital/",
+      url: "https://rpc1mainnet.qie.digital/",
       chainId: 1990,
       accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
     },
