@@ -141,7 +141,7 @@ export const AuctionCard = ({ auction, index }: AuctionCardProps) => {
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Min Price</span>
               <span className="text-sm font-semibold text-primary">
-                {auction.minimumPrice} QIE
+                {auction.minimumPrice} MON
               </span>
             </div>
           </div>

@@ -76,7 +76,7 @@ export const AuctionEndedView = ({
         <div className="text-center py-4">
           <p className="text-sm text-muted-foreground mb-2">Final Sale Price</p>
           <p className="text-4xl font-bold text-primary">
-            {hasWinner ? formattedCurrentBid : '0'} QIE
+            {hasWinner ? formattedCurrentBid : '0'} MON
           </p>
         </div>
 

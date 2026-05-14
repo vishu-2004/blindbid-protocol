@@ -1,6 +1,6 @@
 // ======================
 // CHANGES MADE
-// ➕ Network-aware deployment (local / qieTestnet / qieMainnet)
+// ➕ Network-aware deployment (local / monadTestnet)
 // ➕ ChainId validation for safety
 // ➕ Single script for all networks
 // ======================
@@ -15,7 +15,7 @@ async function main() {
   console.log("🔗 Chain ID:", network.config.chainId);
 
   // ✅ Safety check (optional but recommended)
-  const allowedChainIds = [31337, 1983, 1990];
+  const allowedChainIds = [31337, 10143];
   if (!allowedChainIds.includes(network.config.chainId)) {
     throw new Error("❌ Unsupported network");
   }

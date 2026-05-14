@@ -194,7 +194,7 @@ uint256 public constant BID_INCREMENT = 0.1 ether;
     // 🔴 CHANGE: fixed increment logic
     require(
         msg.value == a.currentBid + BID_INCREMENT,
-        "Bid must be +0.1 QIE"
+        "Bid must be +0.1 MON"
     );
 
     // refund previous bidder

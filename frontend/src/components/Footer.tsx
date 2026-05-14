@@ -79,7 +79,7 @@ export const Footer = () => {
             © 2025 BlindBid Protocol. All rights reserved.
           </p>
           <p className="text-xs text-muted-foreground">
-            Built on QIE Network
+            Built on Monad Network
           </p>
         </div>
       </div>

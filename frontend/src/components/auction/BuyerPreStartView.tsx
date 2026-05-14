@@ -72,7 +72,7 @@ export const BuyerPreStartView = ({
               <Coins className="w-4 h-4" />
               <span className="text-sm">Starting Price</span>
             </div>
-            <p className="text-2xl font-bold text-primary">{formattedStartPrice} QIE</p>
+            <p className="text-2xl font-bold text-primary">{formattedStartPrice} MON</p>
           </div>
           <div className="glass rounded-lg p-4">
             <div className="flex items-center gap-2 text-muted-foreground mb-1">

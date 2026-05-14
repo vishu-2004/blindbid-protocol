@@ -1,6 +1,6 @@
 // ======================
 // CHANGES MADE
-// ➕ Added QIE Testnet & Mainnet
+// ➕ Added Monad Testnet
 // ➕ Env-based private key usage
 // ➕ Works with local + public RPCs
 // ======================
@@ -15,27 +15,26 @@ module.exports = {
 
   networks: {
     // ======================
-    // Local Hardhat
+    // Local Hardhat (in-process)
     // ======================
     hardhat: {
       chainId: 31337,
     },
 
     // ======================
-    // QIE Testnet
+    // Localhost (npx hardhat node)
     // ======================
-    qieTestnet: {
-      url: "https://rpc1testnet.qie.digital/",
-      chainId: 1983,
-      accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
+    localhost: {
+      url: "http://127.0.0.1:8545",
+      chainId: 31337,
     },
 
     // ======================
-    // QIE Mainnet
+    // Monad Testnet
     // ======================
-    qieMainnet: {
-      url: "https://rpc1mainnet.qie.digital/",
-      chainId: 1990,
+    monadTestnet: {
+      url: process.env.MONAD_RPC || "https://testnet-rpc.monad.xyz",
+      chainId: 10143,
       accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
     },
   },

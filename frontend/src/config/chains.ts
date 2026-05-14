@@ -1,49 +1,26 @@
 import { defineChain } from 'viem';
 
-// QIE Testnet Chain Definition
-export const qieTestnet = defineChain({
-  id: 1983,
-  name: 'QIE testnet',
+// Monad Testnet Chain Definition
+export const monadTestnet = defineChain({
+  id: 10143,
+  name: 'Monad Testnet',
   nativeCurrency: {
     decimals: 18,
-    name: 'QIE',
-    symbol: 'QIE',
+    name: 'MON',
+    symbol: 'MON',
   },
   rpcUrls: {
     default: {
-      http: ['https://rpc1testnet.qie.digital/'],
+      http: ['https://testnet-rpc.monad.xyz'],
     },
   },
   blockExplorers: {
     default: {
-      name: 'QIE Testnet Explorer',
-      url: 'https://testnet.qie.digital/',
+      name: 'Monad Explorer',
+      url: 'https://testnet.monadvision.com',
     },
   },
   testnet: true,
-});
-
-// QIE Mainnet Chain Definition
-export const qieMainnet = defineChain({
-  id: 1990,
-  name: 'QIEMainnet',
-  nativeCurrency: {
-    decimals: 18,
-    name: 'QIE',
-    symbol: 'QIEV3',
-  },
-  rpcUrls: {
-    default: {
-      http: ['https://rpc1mainnet.qie.digital/'],
-    },
-  },
-  blockExplorers: {
-    default: {
-      name: 'QIE Explorer',
-      url: 'https://mainnet.qie.digital/',
-    },
-  },
-  testnet: false,
 });
 
 // Local Hardhat Chain Definition
@@ -71,13 +48,11 @@ export const getActiveNetwork = () => {
   switch (network) {
     case 'local':
       return hardhatLocal;
-    case 'mainnet':
-      return qieMainnet;
     case 'testnet':
     default:
-      return qieTestnet;
+      return monadTestnet;
   }
 };
 
 // All supported chains
-export const supportedChains = [qieTestnet, qieMainnet, hardhatLocal] as const;
+export const supportedChains = [monadTestnet, hardhatLocal] as const;

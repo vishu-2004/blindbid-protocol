@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useAccount, usePublicClient, useWriteContract, useBlockNumber } from 'wagmi';
 import { type Address, type Abi, formatEther, parseEther } from 'viem';
 import { getContractAddress } from '@/utils/contract';
 import { getActiveNetwork } from '@/config/chains';
 import VaultAuctionABI from '@/abi/VaultAuction.json';
 import { toast } from '@/hooks/use-toast';
+import { useAuctionSocket } from '@/hooks/useAuctionSocket';
 
 export interface NFTItem {
   nftAddress: Address;
@@ -64,6 +65,20 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
   const { writeContractAsync, isPending: isWritePending } = useWriteContract();
   const { data: blockNumber } = useBlockNumber({ watch: true, chainId: activeChain.id });
 
+  // Socket.IO for real-time sync
+  const {
+    serverTime,
+    socketState,
+    lastBidEvent,
+    clearLastBidEvent,
+    lastStartedEvent,
+    clearLastStartedEvent,
+    lastEndedEvent,
+    clearLastEndedEvent,
+    isConnected: socketConnected,
+    refetchSignal,
+  } = useAuctionSocket(vaultId);
+
   const [vaultData, setVaultData] = useState<VaultData | null>(null);
   const [timing, setTiming] = useState<AuctionTiming | null>(null);
   const [verificationData, setVerificationData] = useState<VerificationData | null>(null);
@@ -71,24 +86,28 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [remainingTime, setRemainingTime] = useState(0);
-  const [blockTimestamp, setBlockTimestamp] = useState<bigint>(BigInt(0));
   const [actionPending, setActionPending] = useState<string | null>(null);
+  const [optimisticBid, setOptimisticBid] = useState<{ currentBid: bigint; highestBidder: Address; lastBidTime: bigint } | null>(null);
+  const [newBidFlash, setNewBidFlash] = useState(false);
+
+  // Track last fetch block to avoid redundant re-fetches
+  const lastFetchBlock = useRef<bigint | null>(null);
+  // Track server time offset for accurate local interpolation
+  const serverTimeOffset = useRef<number>(0);
+  // Track if verification data was already fetched to avoid refetching
+  const verificationFetched = useRef(false);
 
   const contractAddress = getContractAddress();
   const BACKEND_URL = import.meta.env.VITE_API_BASE_URL;
-  // Fetch block timestamp
-  const fetchBlockTimestamp = useCallback(async () => {
-    if (!publicClient) return;
-    try {
-      const block = await publicClient.getBlock();
-      setBlockTimestamp(block.timestamp);
-    } catch (err) {
-      console.error('Failed to fetch block timestamp:', err);
-    }
-  }, [publicClient]);
 
-  // Fetch vault data and timing
-  const fetchVaultData = useCallback(async () => {
+  // Update server time offset whenever we get a sync
+  useEffect(() => {
+    serverTimeOffset.current = serverTime - Date.now();
+  }, [serverTime]);
+
+  // ─── FETCH CORE DATA (vault + timing + seller check) ─────────
+  // This is lightweight — only reads contract state, no verification API
+  const fetchCoreData = useCallback(async () => {
     if (!publicClient || !contractAddress || !vaultId) {
       setError('Contract not configured');
       setIsLoading(false);
@@ -98,8 +117,8 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
     try {
       const vaultIdBigInt = BigInt(vaultId);
 
-      // Fetch all data in parallel
-      const [vaultResult, timingResult, block] = await Promise.all([
+      // Fetch vault data and timing in parallel
+      const [vaultResult, timingResult] = await Promise.all([
         publicClient.readContract({
           address: contractAddress,
           abi: VaultAuctionABI.abi as Abi,
@@ -112,7 +131,6 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
           functionName: 'getAuctionTiming',
           args: [vaultIdBigInt],
         }),
-        publicClient.getBlock(),
       ]);
 
       const vault = vaultResult as [string, string, NFTItem[], Address, bigint, Address, bigint, boolean, boolean, bigint];
@@ -139,41 +157,8 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
         ended: timingData[4],
       });
 
-      setBlockTimestamp(block.timestamp);
-
-      // Fetch verification data from backend for each NFT
-      try {
-        const nftItems = vault[2] as NFTItem[];
-        if (nftItems.length > 0) {
-          const response = await fetch(`${BACKEND_URL}/api/vault/verify`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              nfts: nftItems.map((nft: NFTItem) => ({
-                contract: nft.nftAddress,
-                tokenId: nft.tokenId.toString(),
-              })),
-            }),
-          });
-          
-          if (response.ok) {
-            const verifyResult = await response.json();
-
-            if (verifyResult.approved) {
-              setVerificationData({
-                estimatedValueBand: verifyResult.summary.estimatedValueBand,
-                rarityBreakdown: verifyResult.summary.rarityBreakdown,
-                riskFlags: verifyResult.summary.riskFlags,
-              });
-            }
-            console.log("cdsv",verifyResult);
-
-          }
-        }
-      } catch (verifyErr) {
-        console.error('Failed to fetch verification data:', verifyErr);
-        // Continue without verification data
-      }
+      // Clear optimistic bid once we get confirmed data
+      setOptimisticBid(null);
 
       // Check if current user is seller
       if (address) {
@@ -197,42 +182,199 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
     }
   }, [publicClient, contractAddress, vaultId, address]);
 
+  // ─── FETCH VERIFICATION DATA (heavy, only once) ──────────────
+  const fetchVerificationData = useCallback(async () => {
+    if (verificationFetched.current || !vaultData || !BACKEND_URL) return;
+
+    try {
+      const nftItems = vaultData.nfts;
+      if (nftItems.length > 0) {
+        const response = await fetch(`${BACKEND_URL}/api/vault/verify`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nfts: nftItems.map((nft: NFTItem) => ({
+              contract: nft.nftAddress,
+              tokenId: nft.tokenId.toString(),
+            })),
+          }),
+        });
+        
+        if (response.ok) {
+          const verifyResult = await response.json();
+          if (verifyResult.approved) {
+            setVerificationData({
+              estimatedValueBand: verifyResult.summary.estimatedValueBand,
+              rarityBreakdown: verifyResult.summary.rarityBreakdown,
+              riskFlags: verifyResult.summary.riskFlags,
+            });
+          }
+        }
+      }
+      verificationFetched.current = true;
+    } catch (verifyErr) {
+      console.error('Failed to fetch verification data:', verifyErr);
+    }
+  }, [vaultData, BACKEND_URL]);
+
+  // Full initial load
+  const fetchVaultData = useCallback(async () => {
+    await fetchCoreData();
+  }, [fetchCoreData]);
+
   // Initial load
   useEffect(() => {
     fetchVaultData();
   }, [fetchVaultData]);
 
-  // Refetch on new blocks
+  // Fetch verification data once vault data is available
   useEffect(() => {
-    if (blockNumber) {
-      fetchBlockTimestamp();
-      // Re-sync data on new blocks
-      fetchVaultData();
+    if (vaultData && !verificationFetched.current) {
+      fetchVerificationData();
     }
-  }, [blockNumber, fetchBlockTimestamp, fetchVaultData]);
+  }, [vaultData, fetchVerificationData]);
 
-  // Calculate remaining time - lock to 0 once expired
+  // ─── BLOCK-BASED POLLING (ALWAYS ACTIVE) ─────────────────────
+  // This is the GROUND TRUTH. Always refetch on new blocks.
+  // Socket events provide faster updates, but this guarantees
+  // the UI always reflects chain state within one block.
   useEffect(() => {
-    if (!timing || !blockTimestamp || timing.endTime === BigInt(0)) {
+    if (blockNumber && blockNumber !== lastFetchBlock.current) {
+      lastFetchBlock.current = blockNumber;
+      fetchCoreData();
+    }
+  }, [blockNumber, fetchCoreData]);
+
+  // ─── SOCKET EVENT REFETCH (ACCELERATOR) ──────────────────────
+  // When the backend detects a contract event via Socket.IO,
+  // immediately refetch from chain for confirmed data.
+  // This fires BEFORE the next block poll, making updates near-instant.
+  const lastRefetchSignal = useRef(0);
+  useEffect(() => {
+    if (refetchSignal > 0 && refetchSignal !== lastRefetchSignal.current) {
+      lastRefetchSignal.current = refetchSignal;
+      fetchCoreData();
+    }
+  }, [refetchSignal, fetchCoreData]);
+
+  // ─── QUICK SOCKET STATE PREVIEW ──────────────────────────────
+  // Apply socket state immediately for fastest visual update.
+  // This runs before the chain refetch completes, so the user
+  // sees the update within ~100ms instead of waiting for RPC.
+  useEffect(() => {
+    if (socketState.currentBid == null || !vaultData) return;
+
+    setVaultData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        currentBid: BigInt(socketState.currentBid!),
+        highestBidder: (socketState.highestBidder || prev.highestBidder) as Address,
+        lastBidTime: BigInt(socketState.lastBidTime || 0),
+        active: socketState.active ?? prev.active,
+        ended: socketState.ended ?? prev.ended,
+      };
+    });
+
+    if (socketState.lastBidTime && socketState.bidWindow && socketState.endTime) {
+      setTiming((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          lastBidTime: BigInt(socketState.lastBidTime!),
+          bidWindow: BigInt(socketState.bidWindow!),
+          endTime: BigInt(socketState.endTime!),
+          active: socketState.active ?? prev.active,
+          ended: socketState.ended ?? prev.ended,
+        };
+      });
+    }
+
+    // Clear optimistic bid since we now have confirmed state
+    setOptimisticBid(null);
+  }, [socketState]);
+
+  // Flash effect when another user places a bid
+  useEffect(() => {
+    if (!lastBidEvent || !address) return;
+    
+    // Only flash for bids from OTHER users
+    if (lastBidEvent.bidder.toLowerCase() !== address.toLowerCase()) {
+      setNewBidFlash(true);
+      const timeout = setTimeout(() => setNewBidFlash(false), 1500);
+
+      // Show toast to seller when a new bid is placed (no bidder address)
+      if (isSeller) {
+        const bidAmountMon = formatEther(BigInt(lastBidEvent.currentBid));
+        toast({
+          title: '🔔 New Bid Received!',
+          description: `A new bid of ${bidAmountMon} MON has been placed on your auction.`,
+        });
+      }
+
+      clearLastBidEvent();
+      return () => clearTimeout(timeout);
+    }
+    clearLastBidEvent();
+  }, [lastBidEvent, address, clearLastBidEvent, isSeller]);
+
+  // Toast to seller when auction starts (via socket event from another tab/user)
+  useEffect(() => {
+    if (!lastStartedEvent) return;
+
+    if (isSeller) {
+      toast({
+        title: '🚀 Auction Started!',
+        description: `Your auction "${vaultData?.name || `#${vaultId}`}" is now live and accepting bids.`,
+      });
+    }
+
+    clearLastStartedEvent();
+  }, [lastStartedEvent, isSeller, vaultData?.name, vaultId, clearLastStartedEvent]);
+
+  // Toast to seller when auction ends
+  useEffect(() => {
+    if (!lastEndedEvent) return;
+
+    if (isSeller && lastEndedEvent.finalPrice) {
+      const finalMon = formatEther(BigInt(lastEndedEvent.finalPrice));
+      toast({
+        title: '🏁 Auction Ended!',
+        description: `Your auction has been finalized at ${finalMon} MON.`,
+      });
+    }
+
+    clearLastEndedEvent();
+  }, [lastEndedEvent, isSeller, clearLastEndedEvent]);
+
+  // ─── SERVER-SYNCED TIMER ─────────────────────────────────────
+  // Uses server time from Socket.IO heartbeat for synchronized countdown
+  useEffect(() => {
+    if (!timing || timing.endTime === BigInt(0)) {
       setRemainingTime(0);
       return;
     }
 
     const calculateRemaining = () => {
-      const now = blockTimestamp;
-      const bidWindowEnd = timing.lastBidTime + timing.bidWindow;
-      const auctionEnd = timing.endTime;
+      // Use server-synced time: local time + offset from last server sync
+      const nowMs = Date.now() + serverTimeOffset.current;
+      const nowSeconds = Math.floor(nowMs / 1000);
       
-      // Remaining is min of endTime and (lastBidTime + bidWindow) - now
-      const effectiveEnd = bidWindowEnd < auctionEnd ? bidWindowEnd : auctionEnd;
-      const remaining = effectiveEnd > now ? Number(effectiveEnd - now) : 0;
+      // Get the effective timing values (use optimistic if available)
+      const effectiveLastBidTime = optimisticBid ? Number(optimisticBid.lastBidTime) : Number(timing.lastBidTime);
+      const bidWindowEnd = effectiveLastBidTime + Number(timing.bidWindow);
+      const auctionEnd = Number(timing.endTime);
+      
+      // Remaining is min of endTime and (lastBidTime + bidWindow) minus now
+      const effectiveEnd = Math.min(bidWindowEnd, auctionEnd);
+      const remaining = effectiveEnd > nowSeconds ? effectiveEnd - nowSeconds : 0;
       
       return remaining;
     };
 
     const remaining = calculateRemaining();
     
-    // If already expired, lock at 0 and don't start interval
+    // If already expired, lock at 0
     if (remaining <= 0) {
       setRemainingTime(0);
       return;
@@ -240,21 +382,32 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
     
     setRemainingTime(remaining);
 
-    // Update every second for smoother countdown
+    // Update every second — recalculates from server-synced time
     const interval = setInterval(() => {
-      setRemainingTime(prev => {
-        const newValue = prev - 1;
-        // Lock to 0 once expired
-        if (newValue <= 0) {
-          clearInterval(interval);
-          return 0;
-        }
-        return newValue;
-      });
+      const newRemaining = calculateRemaining();
+      if (newRemaining <= 0) {
+        setRemainingTime(0);
+        clearInterval(interval);
+      } else {
+        setRemainingTime(newRemaining);
+      }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [timing, blockTimestamp]);
+  }, [timing, optimisticBid, serverTime]);
+
+  // Handle tab visibility — re-sync timer when tab becomes visible
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Refetch chain data when tab becomes visible
+        fetchCoreData();
+      }
+    };
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
+  }, [fetchCoreData]);
 
   // Determine current view
   const currentView = useMemo((): AuctionView => {
@@ -288,7 +441,8 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
     return true; // wagmi handles network validation
   }, [isConnected]);
 
-  // Action handlers
+  // ─── ACTION HANDLERS ─────────────────────────────────────────
+
   const startAuction = useCallback(async () => {
     if (!contractAddress || !vaultId) return;
     
@@ -307,7 +461,8 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
         description: 'Your auction is now live.',
       });
       
-      await fetchVaultData();
+      // Refetch immediately to update local state
+      await fetchCoreData();
     } catch (err: any) {
       console.error('Failed to start auction:', err);
       toast({
@@ -318,7 +473,7 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
     } finally {
       setActionPending(null);
     }
-  }, [contractAddress, vaultId, writeContractAsync, activeChain.id, fetchVaultData]);
+  }, [contractAddress, vaultId, writeContractAsync, activeChain.id, fetchCoreData]);
 
   const cancelAuction = useCallback(async () => {
     if (!contractAddress || !vaultId) return;
@@ -338,7 +493,7 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
         description: 'The auction has been cancelled.',
       });
       
-      await fetchVaultData();
+      await fetchCoreData();
     } catch (err: any) {
       console.error('Failed to cancel auction:', err);
       toast({
@@ -349,7 +504,7 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
     } finally {
       setActionPending(null);
     }
-  }, [contractAddress, vaultId, writeContractAsync, activeChain.id, fetchVaultData]);
+  }, [contractAddress, vaultId, writeContractAsync, activeChain.id, fetchCoreData]);
 
   const cancelVault = useCallback(async () => {
     if (!contractAddress || !vaultId) return;
@@ -369,7 +524,7 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
         description: 'The vault has been cancelled and NFTs returned.',
       });
       
-      await fetchVaultData();
+      await fetchCoreData();
     } catch (err: any) {
       console.error('Failed to cancel vault:', err);
       toast({
@@ -380,15 +535,24 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
     } finally {
       setActionPending(null);
     }
-  }, [contractAddress, vaultId, writeContractAsync, activeChain.id, fetchVaultData]);
+  }, [contractAddress, vaultId, writeContractAsync, activeChain.id, fetchCoreData]);
 
   const placeBid = useCallback(async () => {
     if (!contractAddress || !vaultId || !vaultData) return;
     
-    const bidAmount = vaultData.currentBid + BigInt('100000000000000000'); // 0.1 QIE
+    const currentBid = optimisticBid ? optimisticBid.currentBid : vaultData.currentBid;
+    const bidAmount = currentBid + BigInt('100000000000000000'); // 0.1 MON
     
     setActionPending('bid');
     try {
+      // Apply optimistic update BEFORE the transaction
+      const nowSeconds = Math.floor((Date.now() + serverTimeOffset.current) / 1000);
+      setOptimisticBid({
+        currentBid: bidAmount,
+        highestBidder: address as Address,
+        lastBidTime: BigInt(nowSeconds),
+      });
+
       await (writeContractAsync as any)({
         address: contractAddress,
         abi: VaultAuctionABI.abi as Abi,
@@ -400,12 +564,16 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
       
       toast({
         title: 'Bid Placed!',
-        description: `You are now the highest bidder at ${formatEther(bidAmount)} QIE`,
+        description: `You are now the highest bidder at ${formatEther(bidAmount)} MON`,
       });
       
-      await fetchVaultData();
+      // Refetch to get confirmed chain state
+      await fetchCoreData();
     } catch (err: any) {
       console.error('Failed to place bid:', err);
+      
+      // Revert optimistic update on failure
+      setOptimisticBid(null);
       
       let errorMessage = err.shortMessage || err.message || 'Transaction failed';
       if (errorMessage.includes('Bid window expired')) {
@@ -422,7 +590,7 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
     } finally {
       setActionPending(null);
     }
-  }, [contractAddress, vaultId, vaultData, writeContractAsync, activeChain.id, fetchVaultData]);
+  }, [contractAddress, vaultId, vaultData, optimisticBid, address, writeContractAsync, activeChain.id, fetchCoreData]);
 
   const endAuction = useCallback(async () => {
     if (!contractAddress || !vaultId) return;
@@ -442,7 +610,7 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
         description: 'The auction has been finalized.',
       });
       
-      await fetchVaultData();
+      await fetchCoreData();
     } catch (err: any) {
       console.error('Failed to end auction:', err);
       toast({
@@ -453,26 +621,32 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
     } finally {
       setActionPending(null);
     }
-  }, [contractAddress, vaultId, writeContractAsync, activeChain.id, fetchVaultData]);
+  }, [contractAddress, vaultId, writeContractAsync, activeChain.id, fetchCoreData]);
 
-  // Helper to format with max 3 decimal places
+  // ─── COMPUTED VALUES ─────────────────────────────────────────
+
+  // Helper to format with max 4 decimal places
   const formatPrice = (value: bigint): string => {
     const formatted = formatEther(value);
     const num = parseFloat(formatted);
-    // Use toFixed(3) but remove trailing zeros
-    return num.toFixed(3).replace(/\.?0+$/, '') || '0';
+    // Use toFixed(4) but remove trailing zeros
+    return num.toFixed(4).replace(/\.?0+$/, '') || '0';
   };
 
+  // Use optimistic values if available, otherwise use chain-confirmed data
+  const effectiveCurrentBid = optimisticBid ? optimisticBid.currentBid : (vaultData?.currentBid ?? BigInt(0));
+  const effectiveHighestBidder = optimisticBid ? optimisticBid.highestBidder : (vaultData?.highestBidder ?? '0x0000000000000000000000000000000000000000' as Address);
+
   // Formatted values
-  const formattedCurrentBid = vaultData ? formatPrice(vaultData.currentBid) : '0';
+  const formattedCurrentBid = formatPrice(effectiveCurrentBid);
   const formattedStartPrice = vaultData ? formatPrice(vaultData.startPrice) : '0';
-  const nextBidAmount = vaultData ? formatPrice(vaultData.currentBid + BigInt('100000000000000000')) : '0'; // 0.1 QIE
+  const nextBidAmount = formatPrice(effectiveCurrentBid + BigInt('100000000000000000')); // 0.1 MON
 
   // Is highest bidder check (works during live auction)
   const isHighestBidder = useMemo(() => {
-    if (!vaultData || !address) return false;
-    return vaultData.highestBidder.toLowerCase() === address.toLowerCase();
-  }, [vaultData, address]);
+    if (!address) return false;
+    return effectiveHighestBidder.toLowerCase() === address.toLowerCase();
+  }, [effectiveHighestBidder, address]);
 
   // Is winner check (only after auction ended)
   const isWinner = useMemo(() => {
@@ -506,6 +680,8 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
     canBid,
     address,
     activeChain,
+    newBidFlash,
+    socketConnected,
     startAuction,
     cancelAuction,
     cancelVault,

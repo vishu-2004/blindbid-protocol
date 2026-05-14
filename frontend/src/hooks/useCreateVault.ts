@@ -282,7 +282,7 @@ export const useCreateVault = (): UseCreateVaultResult => {
 
         // Validate against max start price from backend
         if (maxStartPrice !== null && parseFloat(startPrice) > maxStartPrice) {
-          throw new Error(`Start price cannot exceed ${maxStartPrice} QIE (backend limit)`);
+          throw new Error(`Start price cannot exceed ${maxStartPrice} MON (backend limit)`);
         }
 
         if (durationMinutes <= 0) {

@@ -28,6 +28,8 @@ const AuctionDetail = () => {
     isWinner,
     activeChain,
     error,
+    newBidFlash,
+    socketConnected,
     startAuction,
     cancelAuction,
     cancelVault,
@@ -79,6 +81,8 @@ const AuctionDetail = () => {
             isSeller={isSeller}
             isHighestBidder={isHighestBidder}
             activeChain={activeChain}
+            newBidFlash={newBidFlash}
+            socketConnected={socketConnected}
             onPlaceBid={placeBid}
             onEndAuction={endAuction}
           />

@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Coins, Shield, Zap, AlertTriangle } from 'lucide-react';
+import { Coins, Shield, Zap, AlertTriangle, Wifi, WifiOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { CountdownTimer } from './CountdownTimer';
@@ -21,6 +21,8 @@ interface LiveAuctionViewProps {
   isSeller: boolean;
   isHighestBidder: boolean;
   activeChain: Chain;
+  newBidFlash: boolean;
+  socketConnected: boolean;
   onPlaceBid: () => void;
   onEndAuction: () => void;
 }
@@ -37,6 +39,8 @@ export const LiveAuctionView = ({
   isSeller,
   isHighestBidder,
   activeChain,
+  newBidFlash,
+  socketConnected,
   onPlaceBid,
   onEndAuction,
 }: LiveAuctionViewProps) => {
@@ -101,20 +105,49 @@ export const LiveAuctionView = ({
           {/* Countdown Timer */}
           <Card className="glass p-6 flex flex-col items-center">
             <CountdownTimer remainingTime={remainingTime} />
+            {/* Sync status indicator */}
+            <div className="flex items-center gap-1.5 mt-3">
+              {socketConnected ? (
+                <>
+                  <Wifi className="w-3 h-3 text-green-400" />
+                  <span className="text-xs text-green-400">Synced</span>
+                </>
+              ) : (
+                <>
+                  <WifiOff className="w-3 h-3 text-amber-400" />
+                  <span className="text-xs text-amber-400">Reconnecting...</span>
+                </>
+              )}
+            </div>
           </Card>
 
           {/* Current Bid */}
-          <Card className="glass-gold p-6">
+          <Card className={`glass-gold p-6 transition-all duration-300 ${
+            newBidFlash ? 'ring-2 ring-green-400/60 shadow-[0_0_20px_rgba(74,222,128,0.2)]' : ''
+          }`}>
             <div className="text-center">
               <p className="text-sm text-muted-foreground mb-2">Current Highest Bid</p>
-              <motion.p
-                key={formattedCurrentBid}
-                initial={{ scale: 1.1 }}
-                animate={{ scale: 1 }}
-                className="text-4xl font-bold text-primary mb-2"
-              >
-                {formattedCurrentBid} QIE
-              </motion.p>
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={formattedCurrentBid}
+                  initial={{ scale: 1.2, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.8, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="text-4xl font-bold text-primary mb-2"
+                >
+                  {formattedCurrentBid} MON
+                </motion.p>
+              </AnimatePresence>
+              {actionPending === 'bid' && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-xs text-amber-400 mb-2"
+                >
+                  Confirming on-chain...
+                </motion.p>
+              )}
               <AddressDisplay 
                 address={vaultData.highestBidder} 
                 className="justify-center"
@@ -187,8 +220,8 @@ export const LiveAuctionView = ({
               <>
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground mb-1">Your Bid Amount</p>
-                  <p className="text-2xl font-bold text-foreground">{nextBidAmount} QIE</p>
-                  <p className="text-xs text-muted-foreground mt-1">Current bid + 0.1 QIE</p>
+                  <p className="text-2xl font-bold text-foreground">{nextBidAmount} MON</p>
+                  <p className="text-xs text-muted-foreground mt-1">Current bid + 0.1 MON</p>
                 </div>
 
                 {remainingTime <= 5 && remainingTime > 0 && (

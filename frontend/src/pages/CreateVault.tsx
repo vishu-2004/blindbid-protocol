@@ -34,7 +34,7 @@ const CreateVault = () => {
   } = useCreateVault();
 
   // Step 1 form state
-  const [nftAddress, setNftAddress] = useState('');
+  const [nftAddress, setNftAddress] = useState('0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512');
   const [tokenIds, setTokenIds] = useState('');
 
   // Step 2 form state
@@ -52,10 +52,10 @@ const CreateVault = () => {
   }, [startPrice, maxStartPrice]);
 
   const isStep3Valid = useMemo(() => {
-    return startPrice && 
-           durationMinutes && 
-           parseFloat(startPrice) > 0 && 
-           !startPriceExceedsMax;
+    return startPrice &&
+      durationMinutes &&
+      parseFloat(startPrice) > 0 &&
+      !startPriceExceedsMax;
   }, [startPrice, durationMinutes, startPriceExceedsMax]);
 
   // Handle Step 1 submission
@@ -341,7 +341,7 @@ const CreateVault = () => {
                 {maxStartPrice !== null && (
                   <div className="bg-primary/10 rounded-lg p-3 border border-primary/30">
                     <p className="text-sm text-primary">
-                      Maximum allowed start price: <span className="font-semibold">{maxStartPrice} QIE</span>
+                      Maximum allowed start price: <span className="font-semibold">{maxStartPrice} MON</span>
                     </p>
                   </div>
                 )}
@@ -349,7 +349,7 @@ const CreateVault = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-2">
-                      Start Price (QIE)
+                      Start Price (MON)
                     </label>
                     <Input
                       type="number"
@@ -365,7 +365,7 @@ const CreateVault = () => {
                     {startPriceExceedsMax && (
                       <p className="text-xs text-destructive mt-1 flex items-center gap-1">
                         <AlertTriangle className="w-3 h-3" />
-                        Exceeds maximum of {maxStartPrice} QIE
+                        Exceeds maximum of {maxStartPrice} MON
                       </p>
                     )}
                   </div>

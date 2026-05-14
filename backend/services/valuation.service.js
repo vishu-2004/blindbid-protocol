@@ -58,12 +58,12 @@ export function estimateValue(indexedNFTs, rarity) {
 
     // 🔴 CHANGE: backend-calculated start price
     startPrice: Number(startPrice.toFixed(4)),
-    unit: "qie",
+    unit: "mon",
 
     // 🔴 CHANGE: bidder-visible estimate
     estimatedValueBand: {
       label: bandLabel,
-      displayRange: `${bandLow.toFixed(2)} – ${bandHigh.toFixed(2)} QIE`,
+      displayRange: `${bandLow.toFixed(2)} – ${bandHigh.toFixed(2)} MON`,
       confidence: hasFreshMint ? "Low" : "Medium"
     },
 

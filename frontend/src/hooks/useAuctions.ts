@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { readVaultAuction, isContractConfigured } from '@/utils/contract';
 import { formatEther } from 'viem';
+import { useAuctionListSocket } from '@/hooks/useAuctionSocket';
 
 export interface AuctionCardData {
   vaultId: number;
@@ -23,15 +24,16 @@ interface UseAuctionsResult {
   refetch: () => Promise<void>;
 }
 
-const formatQie = (value: bigint): string => {
+const formatMon = (value: bigint): string => {
   const num = parseFloat(formatEther(value));
-  return num.toFixed(3).replace(/\.?0+$/, '') || '0';
+  return num.toFixed(4).replace(/\.?0+$/, '') || '0';
 };
 
-export const useAuctions = (pollInterval = 12000): UseAuctionsResult => {
+export const useAuctions = (pollInterval = 30000): UseAuctionsResult => {
   const [auctions, setAuctions] = useState<AuctionCardData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { updateEvent, clearUpdateEvent } = useAuctionListSocket();
 
   const fetchAuctions = useCallback(async () => {
     if (!isContractConfigured()) {
@@ -72,7 +74,7 @@ export const useAuctions = (pollInterval = 12000): UseAuctionsResult => {
             isLive,
             isEnded,
             timeRemaining: Number(timeRemaining),
-            minimumPrice: formatQie(minimumPrice),
+            minimumPrice: formatMon(minimumPrice),
             minimumPriceRaw: minimumPrice,
           };
         } catch (err) {
@@ -104,7 +106,7 @@ export const useAuctions = (pollInterval = 12000): UseAuctionsResult => {
     fetchAuctions();
   }, [fetchAuctions]);
 
-  // Poll for updates (simulates block-based updates)
+  // Poll for updates — now a slower fallback since Socket.IO provides real-time updates
   useEffect(() => {
     if (pollInterval <= 0) return;
 
@@ -114,6 +116,15 @@ export const useAuctions = (pollInterval = 12000): UseAuctionsResult => {
 
     return () => clearInterval(interval);
   }, [fetchAuctions, pollInterval]);
+
+  // Handle Socket.IO auction update events — refetch when something changes
+  useEffect(() => {
+    if (!updateEvent) return;
+    
+    // Refetch to get latest data when any auction changes
+    fetchAuctions();
+    clearUpdateEvent();
+  }, [updateEvent, fetchAuctions, clearUpdateEvent]);
 
   // Decrement timeRemaining locally every second for live auctions
   useEffect(() => {
