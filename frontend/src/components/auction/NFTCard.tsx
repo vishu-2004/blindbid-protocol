@@ -121,7 +121,7 @@ export const NFTCard = ({ nftAddress, tokenId, showFullAddress = true }: NFTCard
 
       {/* NFT Detail Modal */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-sm p-0 overflow-hidden rounded-2xl border-2 border-primary/50 bg-card/95 backdrop-blur-xl shadow-[0_0_30px_rgba(212,175,55,0.15)]">
+        <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-sm p-0 overflow-hidden rounded-2xl border-2 border-primary/50 bg-card/95 backdrop-blur-xl shadow-[0_0_30px_rgba(212,175,55,0.15)]">
           <VisuallyHidden>
             <DialogTitle>NFT Details</DialogTitle>
           </VisuallyHidden>

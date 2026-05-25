@@ -575,15 +575,30 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
       // Revert optimistic update on failure
       setOptimisticBid(null);
       
-      let errorMessage = err.shortMessage || err.message || 'Transaction failed';
-      if (errorMessage.includes('Bid window expired')) {
-        errorMessage = 'Bid window has expired. Someone else may have already won.';
-      } else if (errorMessage.includes('Auction duration ended')) {
+      // Refetch immediately so the user sees the updated bid amount
+      await fetchCoreData();
+      
+      const rawMessage = err.shortMessage || err.message || 'Transaction failed';
+      let errorTitle = 'Failed to Place Bid';
+      let errorMessage = rawMessage;
+
+      if (rawMessage.includes('Bid must be') || rawMessage.includes('+0.1 MON')) {
+        // Race condition: another bidder's transaction was mined before ours
+        errorTitle = 'Outbid!';
+        errorMessage = 'Another bidder placed their bid just before you. The price has been updated — please try again with the new amount.';
+      } else if (rawMessage.includes('Bid window expired')) {
+        errorMessage = 'The bid window has expired. Someone else may have already won.';
+      } else if (rawMessage.includes('Auction duration ended')) {
         errorMessage = 'The auction has ended.';
+      } else if (rawMessage.includes('Auction inactive')) {
+        errorMessage = 'This auction is no longer active.';
+      } else if (rawMessage.includes('User rejected') || rawMessage.includes('user rejected')) {
+        errorTitle = 'Transaction Cancelled';
+        errorMessage = 'You cancelled the transaction.';
       }
       
       toast({
-        title: 'Failed to Place Bid',
+        title: errorTitle,
         description: errorMessage,
         variant: 'destructive',
       });

@@ -106,7 +106,7 @@ const CreateVault = () => {
   // Contract not configured
   if (!isContractConfigured()) {
     return (
-      <div className="container mx-auto px-4 py-16 max-w-2xl">
+      <div className="container mx-auto px-4 py-8 sm:py-16 max-w-2xl">
         <div className="glass-gold rounded-xl p-8 text-center">
           <XCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-foreground mb-2">
@@ -121,10 +121,10 @@ const CreateVault = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-16 max-w-2xl">
+    <div className="container mx-auto px-4 py-8 sm:py-16 max-w-2xl">
       {/* Header */}
       <div className="mb-8 text-center">
-        <h1 className="text-4xl font-bold text-foreground mb-2">
+        <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2">
           Create Vault Auction
         </h1>
         <p className="text-muted-foreground">
@@ -153,7 +153,7 @@ const CreateVault = () => {
         </motion.div>
       ) : (
         /* Step Forms */
-        <div className="glass-gold rounded-xl p-8">
+        <div className="glass-gold rounded-xl p-4 sm:p-8">
           <AnimatePresence mode="wait">
             {/* Step 1: Verify & Approve NFTs */}
             {currentStep === 1 && (
@@ -346,7 +346,7 @@ const CreateVault = () => {
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-2">
                       Start Price (MON)

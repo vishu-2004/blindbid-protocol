@@ -79,7 +79,7 @@ export const AuctionVerificationInfo = ({
         </div>
 
         {/* Rarity Cards - Compact */}
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {rarityBreakdown.common > 0 && (
             <RarityCard rarity="common" count={rarityBreakdown.common} index={0} />
           )}
@@ -128,7 +128,7 @@ export const AuctionVerificationInfo = ({
       {/* Rarity Cards */}
       <div>
         <p className="text-sm font-medium text-foreground mb-3">Rarity Breakdown</p>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {rarityBreakdown.common > 0 && (
             <RarityCard rarity="common" count={rarityBreakdown.common} index={0} />
           )}

@@ -21,7 +21,7 @@ const Auctions = () => {
           className="flex flex-col md:flex-row md:items-end md:justify-between gap-4"
         >
           <div>
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-2">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-foreground mb-2">
               All Auctions
             </h1>
             <p className="text-muted-foreground max-w-lg">
@@ -169,7 +169,7 @@ const Auctions = () => {
                   <span className="w-2 h-2 rounded-full bg-yellow-500" />
                   Pending Auctions
                 </motion.h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {pendingAuctions.map((auction, index) => (
                     <AuctionCard key={auction.vaultId} auction={auction} index={index} />
                   ))}
@@ -188,7 +188,7 @@ const Auctions = () => {
                   <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                   Live Auctions
                 </motion.h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {liveAuctions.map((auction, index) => (
                     <AuctionCard key={auction.vaultId} auction={auction} index={index} />
                   ))}
@@ -207,7 +207,7 @@ const Auctions = () => {
                   <span className="w-2 h-2 rounded-full bg-muted-foreground" />
                   Ended Auctions
                 </motion.h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {endedAuctions.map((auction, index) => (
                     <AuctionCard key={auction.vaultId} auction={auction} index={index} />
                   ))}

@@ -71,7 +71,7 @@ const Landing = () => {
         
         {/* Animated gradient orbs */}
         <motion.div
-          className="absolute top-1/4 left-1/4 w-[600px] h-[600px] rounded-full opacity-20"
+          className="absolute top-1/4 left-1/4 w-[300px] h-[300px] sm:w-[600px] sm:h-[600px] rounded-full opacity-20"
           style={{
             background: 'radial-gradient(circle, hsl(43 74% 49% / 0.3) 0%, transparent 70%)',
             filter: 'blur(80px)',
@@ -88,7 +88,7 @@ const Landing = () => {
           }}
         />
         <motion.div
-          className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full opacity-15"
+          className="absolute bottom-1/4 right-1/4 w-[250px] h-[250px] sm:w-[500px] sm:h-[500px] rounded-full opacity-15"
           style={{
             background: 'radial-gradient(circle, hsl(43 74% 40% / 0.4) 0%, transparent 70%)',
             filter: 'blur(60px)',
@@ -117,7 +117,7 @@ const Landing = () => {
       </div>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 pt-20 pb-16">
+      <section className="container mx-auto px-4 pt-10 sm:pt-20 pb-10 sm:pb-16">
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -135,7 +135,7 @@ const Landing = () => {
           {/* Main Headline */}
           <motion.h1 
             variants={itemVariants}
-            className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6"
+            className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-4 sm:mb-6"
           >
             <span className="text-foreground">A Blind Vault Auction</span>
             <br />
@@ -145,7 +145,7 @@ const Landing = () => {
           {/* Protocol Description */}
           <motion.p 
             variants={itemVariants}
-            className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
+            className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 sm:mb-10 leading-relaxed px-2"
           >
             BlindBid is a fully on-chain auction protocol where sellers bundle NFTs 
             into sealed vaults and buyers bid without knowing the exact assets inside. 
@@ -232,7 +232,7 @@ const Landing = () => {
       </motion.div>
 
       {/* Features Section */}
-      <section className="container mx-auto px-4 py-20">
+      <section className="container mx-auto px-4 py-10 sm:py-20">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -240,7 +240,7 @@ const Landing = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4">
             How the Protocol Works
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto">
@@ -248,7 +248,7 @@ const Landing = () => {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {features.map((feature, index) => (
             <motion.div
               key={feature.title}
@@ -278,29 +278,29 @@ const Landing = () => {
       </section>
 
       {/* Protocol Stats / Trust Indicators */}
-      <section className="container mx-auto px-4 py-16">
+      <section className="container mx-auto px-4 py-10 sm:py-16">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="glass-gold rounded-2xl p-8 md:p-12"
+          className="glass-gold rounded-2xl p-5 sm:p-8 md:p-12"
         >
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 text-center">
             <div>
-              <p className="text-3xl md:text-4xl font-bold text-primary mb-1">100%</p>
+              <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-1">100%</p>
               <p className="text-sm text-muted-foreground">On-Chain Logic</p>
             </div>
             <div>
-              <p className="text-3xl md:text-4xl font-bold text-foreground mb-1">0</p>
+              <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-1">0</p>
               <p className="text-sm text-muted-foreground">Backend Dependencies</p>
             </div>
             <div>
-              <p className="text-3xl md:text-4xl font-bold text-foreground mb-1">Blind</p>
+              <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-1">Blind</p>
               <p className="text-sm text-muted-foreground">Auction Mechanics</p>
             </div>
             <div>
-              <p className="text-3xl md:text-4xl font-bold text-foreground mb-1">Trustless</p>
+              <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-1">Trustless</p>
               <p className="text-sm text-muted-foreground">Price Discovery</p>
             </div>
           </div>
@@ -308,7 +308,7 @@ const Landing = () => {
       </section>
 
       {/* Final CTA Section */}
-      <section className="container mx-auto px-4 py-20">
+      <section className="container mx-auto px-4 py-10 sm:py-20">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
@@ -316,7 +316,7 @@ const Landing = () => {
           transition={{ duration: 0.5 }}
           className="text-center"
         >
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-4">
             Ready to Participate?
           </h2>
           <p className="text-muted-foreground mb-8 max-w-md mx-auto">

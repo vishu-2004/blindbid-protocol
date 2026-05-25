@@ -65,7 +65,7 @@ export const LiveAuctionView = ({
           </span>
         </motion.div>
 
-        <h1 className="text-3xl font-bold text-foreground">{vaultData.name}</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{vaultData.name}</h1>
         <p className="text-muted-foreground max-w-md mx-auto">{vaultData.description}</p>
         
         <div>
@@ -74,7 +74,7 @@ export const LiveAuctionView = ({
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
         {/* Left: Vault Preview */}
         <div className="space-y-6">
           {/* Verification Info from Backend */}
@@ -134,7 +134,7 @@ export const LiveAuctionView = ({
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.8, opacity: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="text-4xl font-bold text-primary mb-2"
+                  className="text-3xl sm:text-4xl font-bold text-primary mb-2"
                 >
                   {formattedCurrentBid} MON
                 </motion.p>

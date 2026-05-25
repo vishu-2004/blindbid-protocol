@@ -45,7 +45,7 @@ export const BuyerPreStartView = ({
           </motion.div>
         </motion.div>
         
-        <h1 className="text-3xl font-bold text-foreground mb-2">{vaultData.name}</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">{vaultData.name}</h1>
         <p className="text-muted-foreground max-w-md mx-auto mb-6">{vaultData.description}</p>
         
         <motion.div
@@ -60,8 +60,8 @@ export const BuyerPreStartView = ({
       </div>
 
       {/* Vault Preview */}
-      <Card className="glass-gold p-6 space-y-6">
-        <div className="flex items-center justify-between border-b border-border/30 pb-4">
+      <Card className="glass-gold p-4 sm:p-6 space-y-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-border/30 pb-4 gap-2">
           <span className="text-muted-foreground">Seller</span>
           <AddressDisplay address={vaultData.seller} label="Verified Seller" />
         </div>
@@ -72,13 +72,13 @@ export const BuyerPreStartView = ({
               <Coins className="w-4 h-4" />
               <span className="text-sm">Starting Price</span>
             </div>
-            <p className="text-2xl font-bold text-primary">{formattedStartPrice} MON</p>
+            <p className="text-xl sm:text-2xl font-bold text-primary">{formattedStartPrice} MON</p>
           </div>
           <div className="glass rounded-lg p-4">
             <div className="flex items-center gap-2 text-muted-foreground mb-1">
               <span className="text-sm">NFTs in Vault</span>
             </div>
-            <p className="text-2xl font-bold text-foreground">{vaultData.nfts.length}</p>
+            <p className="text-xl sm:text-2xl font-bold text-foreground">{vaultData.nfts.length}</p>
           </div>
         </div>
 

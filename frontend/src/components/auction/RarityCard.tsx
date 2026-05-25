@@ -73,7 +73,7 @@ export const RarityCard = ({ rarity, count, index }: RarityCardProps) => {
       {/* Card container */}
       <div
         className={`
-          relative overflow-hidden rounded-xl p-6
+          relative overflow-hidden rounded-xl p-3 sm:p-6
           bg-gradient-to-br ${config.bgGradient}
           border ${config.borderColor}
           backdrop-blur-sm
@@ -139,23 +139,23 @@ export const RarityCard = ({ rarity, count, index }: RarityCardProps) => {
         {/* Icon with glow */}
         <div className="relative">
           <div 
-            className={`w-14 h-14 rounded-full bg-gradient-to-br ${config.gradient} flex items-center justify-center mb-4 shadow-lg`}
+            className={`w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br ${config.gradient} flex items-center justify-center mb-3 sm:mb-4 shadow-lg`}
             style={{
               boxShadow: `0 0 20px ${config.glow}, 0 4px 15px rgba(0,0,0,0.3)`
             }}
           >
-            <Icon className="w-7 h-7 text-white drop-shadow-lg" />
+            <Icon className="w-5 h-5 sm:w-7 sm:h-7 text-white drop-shadow-lg" />
           </div>
         </div>
 
         {/* Label with gradient text */}
-        <h3 className={`text-xl font-bold ${config.textColor} mb-2 tracking-wide`}>
+        <h3 className={`text-base sm:text-xl font-bold ${config.textColor} mb-1 sm:mb-2 tracking-wide`}>
           {config.label}
         </h3>
 
         {/* Count with emphasis */}
         <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-bold text-foreground drop-shadow-sm">
+          <span className="text-2xl sm:text-3xl font-bold text-foreground drop-shadow-sm">
             {count}
           </span>
           <span className="text-sm text-muted-foreground font-medium">NFTs</span>

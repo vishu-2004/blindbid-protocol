@@ -108,9 +108,9 @@ const AuctionDetail = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-4 sm:py-8">
       {/* Breadcrumb */}
-      <div className="mb-8">
+      <div className="mb-4 sm:mb-8">
         <Link 
           to="/auctions" 
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary text-sm transition-colors"

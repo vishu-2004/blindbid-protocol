@@ -32,9 +32,9 @@ export const AuctionEndedView = ({
           transition={{ delay: 0.2, type: 'spring' }}
           className="text-center"
         >
-          <div className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 glow-gold">
+          <div className="inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-8 py-3 sm:py-4 rounded-2xl bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 glow-gold">
             <PartyPopper className="w-8 h-8 text-primary" />
-            <span className="text-2xl font-bold text-foreground">Congratulations! You Won!</span>
+            <span className="text-lg sm:text-2xl font-bold text-foreground">Congratulations! You Won!</span>
             <Trophy className="w-8 h-8 text-primary" />
           </div>
         </motion.div>
@@ -62,12 +62,12 @@ export const AuctionEndedView = ({
           <span className="text-foreground text-sm font-medium">Auction Ended</span>
         </div>
 
-        <h1 className="text-3xl font-bold text-foreground mb-2">{vaultData.name}</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">{vaultData.name}</h1>
         <p className="text-muted-foreground max-w-md mx-auto">{vaultData.description}</p>
       </div>
 
       {/* Receipt Card */}
-      <Card className="glass-gold p-6 space-y-6 max-w-2xl mx-auto">
+      <Card className="glass-gold p-4 sm:p-6 space-y-6 max-w-2xl mx-auto">
         <div className="text-center pb-4 border-b border-border/30">
           <h2 className="text-xl font-semibold text-foreground">Auction Receipt</h2>
         </div>
@@ -75,7 +75,7 @@ export const AuctionEndedView = ({
         {/* Final Price */}
         <div className="text-center py-4">
           <p className="text-sm text-muted-foreground mb-2">Final Sale Price</p>
-          <p className="text-4xl font-bold text-primary">
+          <p className="text-3xl sm:text-4xl font-bold text-primary">
             {hasWinner ? formattedCurrentBid : '0'} MON
           </p>
         </div>

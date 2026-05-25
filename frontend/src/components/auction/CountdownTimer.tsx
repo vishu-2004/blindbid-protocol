@@ -30,7 +30,7 @@ export const CountdownTimer = ({ remainingTime, className = '' }: CountdownTimer
   return (
     <div className={`relative ${className}`}>
       {/* Animated Progress Ring */}
-      <svg className="w-48 h-48 transform -rotate-90" viewBox="0 0 200 200">
+      <svg className="w-36 h-36 sm:w-48 sm:h-48 transform -rotate-90" viewBox="0 0 200 200">
         {/* Background ring */}
         <circle
           cx="100"
@@ -63,7 +63,7 @@ export const CountdownTimer = ({ remainingTime, className = '' }: CountdownTimer
           key={remainingTime}
           initial={{ scale: 1.05, opacity: 0.8 }}
           animate={{ scale: 1, opacity: 1 }}
-          className={`text-4xl font-bold font-mono tracking-wider ${
+          className={`text-3xl sm:text-4xl font-bold font-mono tracking-wider ${
             isUrgent ? 'text-destructive' : isWarning ? 'text-primary' : 'text-foreground'
           }`}
         >

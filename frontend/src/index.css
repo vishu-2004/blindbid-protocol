@@ -82,6 +82,14 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', system-ui, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    overflow-x: hidden;
+  }
+
+  /* Better touch targets on mobile */
+  button, a, [role="button"] {
+    touch-action: manipulation;
   }
 
   /* Custom scrollbar for dark theme */
@@ -100,6 +108,14 @@
 
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-muted-foreground/30;
+  }
+
+  /* Hide scrollbar on mobile */
+  @media (max-width: 640px) {
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
   }
 }
 
