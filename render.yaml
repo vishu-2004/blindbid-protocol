@@ -1,0 +1,23 @@
+# Render deployment blueprint
+# See: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: blindbid-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NETWORK
+        value: testnet
+      - key: PORT
+        value: 10000
+      - key: TESTNET_RPC_URL
+        sync: false  # Set manually in Render dashboard
+      - key: VAULT_AUCTION_ADDRESS
+        sync: false  # Set manually in Render dashboard
+      - key: FRONTEND_URL
+        value: https://blindbid-protocol.vercel.app
