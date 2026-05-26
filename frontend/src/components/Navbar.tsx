@@ -15,6 +15,17 @@ export const Navbar = () => {
   const { isScrolled } = useScrollState(50);
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect screen size for responsive wallet button config
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -98,21 +109,12 @@ export const Navbar = () => {
 
           {/* Right side: Wallet + Mobile Menu Button */}
           <div className="flex items-center gap-2 sm:gap-4">
-            {/* Wallet Connect - compact on mobile */}
-            <div className="hidden sm:block">
-              <ConnectButton 
-                showBalance={false}
-                chainStatus="none"
-                accountStatus="address"
-              />
-            </div>
-            <div className="block sm:hidden">
-              <ConnectButton 
-                showBalance={false}
-                chainStatus="none"
-                accountStatus="avatar"
-              />
-            </div>
+            {/* Wallet Connect - dynamically configures to show avatar on mobile and full address on desktop */}
+            <ConnectButton 
+              showBalance={false}
+              chainStatus={isMobile ? "none" : "icon"}
+              accountStatus={isMobile ? "avatar" : "address"}
+            />
 
             {/* Mobile Hamburger */}
             <button

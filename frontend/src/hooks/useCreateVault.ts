@@ -185,6 +185,7 @@ export const useCreateVault = (): UseCreateVaultResult => {
           functionName: 'setApprovalForAll',
           args: [contractAddress, true],
           chainId: activeChain.id,
+          chain: activeChain,
         } as any);
 
         // Wait for transaction confirmation
@@ -241,6 +242,7 @@ export const useCreateVault = (): UseCreateVaultResult => {
           functionName: 'createVault',
           args: [nftAddresses, nftInfo.tokenIds, name, description],
           chainId: activeChain.id,
+          chain: activeChain,
         } as any);
 
         // Wait for transaction confirmation
@@ -298,6 +300,7 @@ export const useCreateVault = (): UseCreateVaultResult => {
           functionName: 'createAuction',
           args: [vaultId, startPriceWei, durationSeconds],
           chainId: activeChain.id,
+          chain: activeChain,
         } as any);
 
         // Wait for transaction confirmation

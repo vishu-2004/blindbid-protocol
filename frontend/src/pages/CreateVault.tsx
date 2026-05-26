@@ -34,7 +34,7 @@ const CreateVault = () => {
   } = useCreateVault();
 
   // Step 1 form state
-  const [nftAddress, setNftAddress] = useState('0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512');
+  const [nftAddress, setNftAddress] = useState('0x8F0fD3441657789C81F5f2C70eb7C9493C748898');
   const [tokenIds, setTokenIds] = useState('');
 
   // Step 2 form state

@@ -454,6 +454,7 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
         functionName: 'startAuction',
         args: [BigInt(vaultId)],
         chainId: activeChain.id,
+        chain: activeChain,
       });
       
       toast({
@@ -486,6 +487,7 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
         functionName: 'cancelAuction',
         args: [BigInt(vaultId)],
         chainId: activeChain.id,
+        chain: activeChain,
       });
       
       toast({
@@ -517,6 +519,7 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
         functionName: 'cancelVault',
         args: [BigInt(vaultId)],
         chainId: activeChain.id,
+        chain: activeChain,
       });
       
       toast({
@@ -560,6 +563,7 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
         args: [BigInt(vaultId)],
         value: bidAmount,
         chainId: activeChain.id,
+        chain: activeChain,
       });
       
       toast({
@@ -618,6 +622,7 @@ export const useAuctionDetail = (vaultId: string | undefined) => {
         functionName: 'endAuction',
         args: [BigInt(vaultId)],
         chainId: activeChain.id,
+        chain: activeChain,
       });
       
       toast({

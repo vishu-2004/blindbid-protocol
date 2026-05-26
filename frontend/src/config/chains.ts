@@ -11,7 +11,7 @@ export const monadTestnet = defineChain({
   },
   rpcUrls: {
     default: {
-      http: ['https://testnet-rpc.monad.xyz'],
+      http: ['https://rpc-testnet.monadinfra.com', 'https://rpc.ankr.com/monad_testnet'],
     },
   },
   blockExplorers: {
@@ -42,9 +42,9 @@ export const hardhatLocal = defineChain({
 
 // Get active chain based on environment
 export const getActiveNetwork = () => {
-  console.log("network in env",import.meta.env.VITE_ACTIVE_NETWORK);
+  console.log("network in env", import.meta.env.VITE_ACTIVE_NETWORK);
   const network = import.meta.env.VITE_ACTIVE_NETWORK || 'testnet';
-  
+
   switch (network) {
     case 'local':
       return hardhatLocal;
