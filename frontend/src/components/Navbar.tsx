@@ -108,18 +108,20 @@ export const Navbar = () => {
           </nav>
 
           {/* Right side: Wallet + Mobile Menu Button */}
-          <div className="flex items-center gap-2 sm:gap-4">
-            {/* Wallet Connect - dynamically configures to show avatar on mobile and full address on desktop */}
-            <ConnectButton 
-              showBalance={false}
-              chainStatus={isMobile ? "none" : "icon"}
-              accountStatus={isMobile ? "avatar" : "address"}
-            />
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+            {/* Wallet Connect - wrapped to prevent overflow on small screens */}
+            <div className="min-w-0 overflow-hidden flex-shrink">
+              <ConnectButton 
+                showBalance={false}
+                chainStatus={isMobile ? "none" : "icon"}
+                accountStatus={isMobile ? "avatar" : "address"}
+              />
+            </div>
 
             {/* Mobile Hamburger */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden flex items-center justify-center w-10 h-10 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors"
+              className="md:hidden flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (
